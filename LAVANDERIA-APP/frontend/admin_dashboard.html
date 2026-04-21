@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LavanderApp — Administrador</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --brand-deep: #1a2744; --brand-accent: #3e85f5; --brand-light: #e8f0fe;
+      --surface: #ffffff; --surface-alt: #f5f7fa; --border: #e2e6ef;
+      --text-main: #1a2744; --text-soft: #6b7799; --text-hint: #9aa3be;
+      --sidebar-w: 240px; --radius: 12px; --transition: .2s cubic-bezier(.4,0,.2,1);
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--surface-alt); color: var(--text-main); min-height: 100vh; display: flex; }
+
+    .sidebar { width: var(--sidebar-w); min-height: 100vh; background: var(--brand-deep); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
+    .sidebar-logo { padding: 1.5rem 1.4rem 1.2rem; border-bottom: 1px solid rgba(255,255,255,.08); display: flex; align-items: center; gap: .7rem; }
+    .logo-icon { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--brand-accent), #6ba3ff); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .logo-icon svg { width: 20px; height: 20px; }
+    .logo-text { font-family: 'DM Serif Display', serif; color: #fff; font-size: 1.1rem; }
+    .logo-role { font-size: .7rem; color: rgba(255,255,255,.45); letter-spacing: .6px; text-transform: uppercase; margin-top: 1px; }
+    .sidebar-nav { flex: 1; padding: 1rem 0; overflow-y: auto; }
+    .nav-section { font-size: .68rem; font-weight: 600; color: rgba(255,255,255,.3); letter-spacing: 1px; text-transform: uppercase; padding: 1rem 1.4rem .4rem; }
+    .nav-item { display: flex; align-items: center; gap: .75rem; padding: .65rem 1.4rem; color: rgba(255,255,255,.6); cursor: pointer; transition: background var(--transition), color var(--transition); font-size: .9rem; border-left: 3px solid transparent; user-select: none; }
+    .nav-item:hover { background: rgba(255,255,255,.06); color: rgba(255,255,255,.9); }
+    .nav-item.active { background: rgba(62,133,245,.15); color: #fff; border-left-color: var(--brand-accent); }
+    .nav-item svg { width: 17px; height: 17px; flex-shrink: 0; }
+    .sidebar-foot { padding: 1rem 1.4rem; border-top: 1px solid rgba(255,255,255,.08); }
+    .user-chip { display: flex; align-items: center; gap: .7rem; }
+    .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--brand-accent), #6ba3ff); display: flex; align-items: center; justify-content: center; font-size: .8rem; font-weight: 600; color: #fff; flex-shrink: 0; }
+    .user-name { font-size: .85rem; color: #fff; font-weight: 500; }
+    .user-role { font-size: .73rem; color: rgba(255,255,255,.4); }
+    .logout-btn { margin-left: auto; background: none; border: none; cursor: pointer; color: rgba(255,255,255,.4); padding: .3rem; transition: color var(--transition); }
+    .logout-btn:hover { color: #ff6b6b; }
+    .logout-btn svg { width: 16px; height: 16px; }
+
+    .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; }
+    .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+    .page-title { font-size: 1.15rem; font-weight: 600; }
+    .page-subtitle { font-size: .82rem; color: var(--text-soft); margin-top: 1px; }
+    .topbar-badge { background: var(--brand-light); color: var(--brand-accent); font-size: .75rem; font-weight: 600; padding: .3rem .8rem; border-radius: 99px; border: 1px solid rgba(62,133,245,.2); }
+    .content { padding: 2rem; flex: 1; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.2rem 1.4rem; display: flex; flex-direction: column; gap: .5rem; }
+    .stat-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: .3rem; }
+    .stat-icon svg { width: 18px; height: 18px; }
+    .stat-icon.blue { background: #e8f0fe; color: var(--brand-accent); }
+    .stat-icon.green { background: #e6f9f0; color: #22c55e; }
+    .stat-icon.amber { background: #fff8e6; color: #f59e0b; }
+    .stat-icon.red { background: #fff0f0; color: #ef4444; }
+    .stat-icon.purple { background: #f3f0ff; color: #8b5cf6; }
+    .stat-value { font-size: 1.7rem; font-weight: 600; line-height: 1; }
+    .stat-label { font-size: .8rem; color: var(--text-soft); }
+    .stat-delta { font-size: .75rem; font-weight: 500; }
+
+    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 1.2rem; }
+    .panel-head { padding: 1rem 1.4rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .panel-title { font-size: .95rem; font-weight: 600; }
+    .panel-action { font-size: .8rem; color: var(--brand-accent); cursor: pointer; background: none; border: none; font-family: inherit; font-weight: 500; }
+    .panel-action:hover { opacity: .7; }
+    .panel-body { padding: 1.2rem 1.4rem; }
+
+    .data-table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+    .data-table th { text-align: left; padding: .55rem .8rem; font-size: .75rem; font-weight: 600; color: var(--text-soft); text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid var(--border); }
+    .data-table td { padding: .7rem .8rem; border-bottom: 1px solid var(--border); }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: var(--surface-alt); }
+
+    .badge { display: inline-block; font-size: .72rem; font-weight: 600; padding: .22rem .65rem; border-radius: 99px; }
+    .badge.pendiente { background: #fff8e6; color: #b45309; }
+    .badge.proceso { background: #e8f0fe; color: #1d4ed8; }
+    .badge.finalizado { background: #e6f9f0; color: #15803d; }
+    .badge.entregado { background: #f3f0ff; color: #6d28d9; }
+
+    /* Modal */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 200; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: var(--surface); border-radius: var(--radius); width: 100%; max-width: 480px; margin: 1rem; box-shadow: 0 20px 60px rgba(0,0,0,.2); }
+    .modal-head { padding: 1.2rem 1.4rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .modal-title { font-size: 1rem; font-weight: 600; }
+    .modal-close { background: none; border: none; cursor: pointer; color: var(--text-hint); font-size: 1.4rem; line-height: 1; }
+    .modal-close:hover { color: var(--text-main); }
+    .modal-body { padding: 1.4rem; display: flex; flex-direction: column; gap: 1rem; }
+    .modal-foot { padding: 1rem 1.4rem; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: .7rem; }
+
+    .field { display: flex; flex-direction: column; gap: .4rem; }
+    .field label { font-size: .78rem; font-weight: 600; color: var(--text-soft); text-transform: uppercase; letter-spacing: .4px; }
+    .field input, .field select { padding: .65rem .9rem; border: 1.5px solid var(--border); border-radius: 8px; font-family: inherit; font-size: .92rem; color: var(--text-main); background: var(--surface-alt); outline: none; transition: border-color var(--transition); }
+    .field input:focus, .field select:focus { border-color: var(--brand-accent); background: #fff; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+
+    .btn { padding: .65rem 1.2rem; border-radius: 8px; font-family: inherit; font-size: .9rem; font-weight: 600; cursor: pointer; border: none; transition: opacity var(--transition); }
+    .btn-primary { background: var(--brand-accent); color: #fff; }
+    .btn-primary:hover { opacity: .88; }
+    .btn-secondary { background: var(--surface-alt); color: var(--text-soft); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--border); }
+
+    .btn-table { padding: .3rem .7rem; border-radius: 6px; font-size: .75rem; font-weight: 600; cursor: pointer; border: none; font-family: inherit; }
+    .btn-edit { background: #e8f0fe; color: #1d4ed8; }
+    .btn-delete { background: #fff0f0; color: #ef4444; }
+
+    .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: #1a2744; color: #fff; padding: .8rem 1.2rem; border-radius: 10px; font-size: .88rem; z-index: 999; opacity: 0; transform: translateY(10px); transition: all .3s ease; pointer-events: none; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.error { background: #991b1b; }
+
+    .section { display: none; }
+    .section.active { display: block; }
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 48 48" fill="none">
+        <rect x="6" y="6" width="36" height="36" rx="6" stroke="#fff" stroke-width="2.5"/>
+        <rect x="6" y="6" width="36" height="10" rx="6" fill="rgba(255,255,255,.15)" stroke="#fff" stroke-width="2.5"/>
+        <circle cx="24" cy="29" r="8" stroke="#fff" stroke-width="2.5"/>
+        <circle cx="24" cy="29" r="3.5" stroke="rgba(255,255,255,.6)" stroke-width="2"/>
+      </svg>
+    </div>
+    <div>
+      <div class="logo-text">LavanderApp</div>
+      <div class="logo-role">Administrador</div>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Principal</div>
+    <div class="nav-item active" data-section="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Panel general
+    </div>
+    <div class="nav-section">Gestión</div>
+    <div class="nav-item" data-section="clientes">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      Clientes
+    </div>
+    <div class="nav-item" data-section="pedidos">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/></svg>
+      Pedidos
+    </div>
+    <div class="nav-item" data-section="sacos">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      Sacos
+    </div>
+    <div class="nav-item" data-section="facturas">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+      Facturación
+    </div>
+    <div class="nav-item" data-section="productos">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+      Productos
+    </div>
+    <div class="nav-section">Administración</div>
+    <div class="nav-item" data-section="usuarios">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Usuarios
+    </div>
+  </nav>
+  <div class="sidebar-foot">
+    <div class="user-chip">
+      <div class="user-avatar">AD</div>
+      <div><div class="user-name">Admin</div><div class="user-role">Administrador</div></div>
+      <button class="logout-btn" onclick="cerrarSesion()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div>
+      <div class="page-title" id="page-title">Panel general</div>
+      <div class="page-subtitle" id="page-subtitle">Resumen del sistema</div>
+    </div>
+    <span class="topbar-badge">ADMIN</span>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="section active" id="sec-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+          <div class="stat-value" id="stat-clientes">—</div>
+          <div class="stat-label">Clientes registrados</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/></svg></div>
+          <div class="stat-value" id="stat-pedidos">—</div>
+          <div class="stat-label">Pedidos activos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></div>
+          <div class="stat-value" id="stat-stock">—</div>
+          <div class="stat-label">Productos bajo mínimo</div>
+          <div class="stat-delta" id="stat-stock-delta" style="color:#ef4444"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+          <div class="stat-value">2</div>
+          <div class="stat-label">Empleados activos</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">Últimos pedidos</span>
+          <button class="panel-action" onclick="navTo('pedidos')">Ver todos →</button>
+        </div>
+        <div class="panel-body" style="padding:0">
+          <table class="data-table">
+            <thead><tr><th>#</th><th>Cliente</th><th>Estado</th><th>Peso</th></tr></thead>
+            <tbody id="dash-pedidos"><tr><td colspan="4" style="text-align:center;padding:1rem;color:var(--text-hint)">Cargando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLIENTES -->
+    <div class="section" id="sec-clientes">
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">Clientes registrados</span>
+          <button class="panel-action" onclick="abrirModalCliente()">+ Nuevo cliente</button>
+        </div>
+        <div class="panel-body" style="padding:0">
+          <table class="data-table">
+            <thead><tr><th>Nombre</th><th>Teléfono</th><th>Email</th><th>Acciones</th></tr></thead>
+            <tbody id="tabla-clientes"><tr><td colspan="4" style="text-align:center;padding:1rem;color:var(--text-hint)">Cargando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PEDIDOS -->
+    <div class="section" id="sec-pedidos">
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">Todos los pedidos</span>
+          <button class="panel-action" onclick="abrirModalPedido()">+ Nuevo pedido</button>
+        </div>
+        <div class="panel-body" style="padding:0">
+          <table class="data-table">
+            <thead><tr><th>#</th><th>Cliente</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody id="tabla-pedidos"><tr><td colspan="5" style="text-align:center;padding:1rem;color:var(--text-hint)">Cargando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SACOS -->
+    <div class="section" id="sec-sacos">
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">Sacos por fecha</span>
+          <div style="display:flex;align-items:center;gap:.6rem">
+            <input type="date" id="fecha-sacos-admin" style="padding:.4rem .7rem;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.85rem;outline:none" onchange="cargarSacosAdmin()" />
+            <button class="panel-action" style="background:var(--brand-accent);color:#fff;padding:.4rem .9rem;border-radius:8px;border:none;cursor:pointer;font-weight:600;white-space:nowrap" onclick="abrirModalSacoAdmin()">+ Añadir saco</button>
+          </div>
+        </div>
+        <div class="panel-body" style="padding:0">
+          <table class="data-table">
+            <thead><tr><th>Cliente</th><th>Tipo de ropa</th><th>Peso (kg)</th><th>Precio/kg</th><th>Subtotal</th></tr></thead>
+            <tbody id="tabla-sacos-admin"><tr><td colspan="6" style="text-align:center;padding:1rem;color:var(--text-hint)">Cargando...</td></tr></tbody>
+          </table>
+        </div>
+        <div style="padding:.8rem 1.4rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:2rem;font-size:.88rem">
+          <span>Total sacos: <strong id="admin-total-sacos">0</strong></span>
+          <span>Peso total: <strong id="admin-total-peso">0 kg</strong></span>
+          <span>Importe total: <strong id="admin-total-importe">0.00€</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FACTURAS -->
+    <div class="section" id="sec-facturas">
+      <div class="panel" style="margin-bottom:1rem">
+        <div class="panel-head">
+          <span class="panel-title">Facturación mensual</span>
+          <div style="display:flex;gap:.6rem;align-items:center">
+            <input type="month" id="mes-facturacion" style="padding:.4rem .7rem;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.85rem;outline:none" />
+            <button class="panel-action" style="background:var(--brand-accent);color:#fff;padding:.4rem .9rem;border-radius:8px;border:none;cursor:pointer;font-weight:600" onclick="generarFacturasMes()">Generar facturas del mes</button>
+            <button class="panel-action" onclick="abrirModalFactura()">+ Nueva factura manual</button>
+          </div>
+        </div>
+        <div class="panel-body" style="padding:0">
+          <table class="data-table">
+            <thead><tr><th>Nº Factura</th><th>Cliente</th><th>Fecha</th><th>Base</th><th>IVA 21%</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody id="tabla-facturas"><tr><td colspan="8" style="text-align:center;padding:1rem;color:var(--text-hint)">Cargando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCTOS -->
+    <div class="section" id="sec-productos">
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">Gestión de productos</span>
+          <button class="panel-action" onclick="abrirModalProducto()">+ Añadir producto</button>
+        </div>
+        <div class="panel-body" style="padding:0">
+          <table class="data-table">
+            <thead><tr><th>Producto</th><th>Categoría</th><th>Stock</th><th>Mínimo</th><th>Precio/u</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody id="tabla-productos"><tr><td colspan="7" style="text-align:center;padding:1rem;color:var(--text-hint)">Cargando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- USUARIOS -->
+    <div class="section" id="sec-usuarios">
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">Usuarios del sistema</span>
+          <button class="panel-action" onclick="abrirModalUsuario()">+ Nuevo usuario</button>
+        </div>
+        <div class="panel-body" style="padding:0">
+          <table class="data-table">
+            <thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Último acceso</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody id="tabla-usuarios"><tr><td colspan="6" style="text-align:center;padding:1rem;color:var(--text-hint)">Cargando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- MODAL CLIENTE -->
+<div class="modal-overlay" id="modal-cliente">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title" id="modal-cliente-titulo">Nuevo cliente</span>
+      <button class="modal-close" onclick="cerrarModal('modal-cliente')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="cliente-id" />
+      <div class="field-row">
+        <div class="field"><label>Nombre *</label><input type="text" id="cliente-nombre" placeholder="Nombre" /></div>
+        <div class="field"><label>Apellidos *</label><input type="text" id="cliente-apellidos" placeholder="Apellidos" /></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Teléfono</label><input type="text" id="cliente-telefono" placeholder="612 345 678" /></div>
+        <div class="field"><label>Email</label><input type="email" id="cliente-email" placeholder="email@ejemplo.com" /></div>
+      </div>
+      <div class="field"><label>Dirección</label><input type="text" id="cliente-direccion" placeholder="Calle, número, ciudad" /></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="cerrarModal('modal-cliente')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarCliente()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PEDIDO -->
+<div class="modal-overlay" id="modal-pedido">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Nuevo pedido</span>
+      <button class="modal-close" onclick="cerrarModal('modal-pedido')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Cliente *</label><select id="pedido-cliente"><option value="">— Selecciona un cliente —</option></select></div>
+      <div class="field-row">
+        <div class="field"><label>Tipo de ropa</label>
+          <select id="pedido-tipo">
+            <option value="1">Blanca</option><option value="2">Color</option>
+            <option value="3">Delicada</option><option value="4">Ropa hogar</option><option value="5">Especial</option>
+          <option value="6">Toallas medianas</option>
+            <option value="7">Toallas grandes</option>
+            <option value="8">Alfombrines</option>
+            <option value="9">Paños de cara</option>
+            <option value="10">Baberos</option>
+          </select>
+        </div>
+        <div class="field"><label>Peso del saco (kg)</label><input type="number" id="pedido-peso" placeholder="0.0" step="0.1" min="0.1" /></div>
+      </div>
+      <div class="field"><label>Fecha estimada de entrega</label><input type="date" id="pedido-fecha" /></div>
+      <div class="field"><label>Observaciones</label><input type="text" id="pedido-obs" placeholder="Notas adicionales..." /></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="cerrarModal('modal-pedido')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarPedido()">Crear pedido</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PRODUCTO -->
+<div class="modal-overlay" id="modal-producto">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title" id="modal-producto-titulo">Nuevo producto</span>
+      <button class="modal-close" onclick="cerrarModal('modal-producto')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="producto-id" />
+      <div class="field"><label>Nombre *</label><input type="text" id="producto-nombre" placeholder="Nombre del producto" /></div>
+      <div class="field"><label>Categoría</label>
+        <select id="producto-categoria">
+          <option value="1">Detergentes</option><option value="2">Suavizantes</option>
+          <option value="3">Quitamanchas</option><option value="4">Bolsas y embalajes</option><option value="5">Otros</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Stock actual</label><input type="number" id="producto-stock" placeholder="0" min="0" /></div>
+        <div class="field"><label>Stock mínimo</label><input type="number" id="producto-minimo" placeholder="5" min="0" /></div>
+      </div>
+      <div class="field"><label>Precio por unidad (€)</label><input type="number" id="producto-precio" placeholder="0.00" step="0.01" min="0" /></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="cerrarModal('modal-producto')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarProducto()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SACO ADMIN -->
+<div class="modal-overlay" id="modal-saco-admin">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Registrar saco recibido</span>
+      <button class="modal-close" onclick="cerrarModal('modal-saco-admin')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Cliente *</label>
+        <select id="saco-admin-cliente"><option value="">— Selecciona un cliente —</option></select>
+      </div>
+      <div class="field">
+        <label>Fecha estimada de entrega *</label>
+        <input type="date" id="saco-admin-fecha" />
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Tipo de ropa *</label>
+          <select id="saco-admin-tipo">
+            <option value="1">Blanca</option>
+            <option value="2">Color</option>
+            <option value="3">Delicada</option>
+            <option value="4">Ropa hogar</option>
+            <option value="5">Especial</option>
+            <option value="6">Toallas medianas</option>
+            <option value="7">Toallas grandes</option>
+            <option value="8">Alfombrines</option>
+            <option value="9">Paños de cara</option>
+            <option value="10">Baberos</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Peso (kg) *</label>
+          <input type="number" id="saco-admin-peso" placeholder="0.0" step="0.1" min="0.1" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Observaciones</label>
+        <input type="text" id="saco-admin-obs" placeholder="Notas del saco..." />
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="cerrarModal('modal-saco-admin')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarSacoAdmin()">Registrar saco</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL USUARIO -->
+<div class="modal-overlay" id="modal-usuario">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title" id="modal-usuario-titulo">Nuevo usuario</span>
+      <button class="modal-close" onclick="cerrarModal('modal-usuario')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="usuario-id" />
+      <div class="field-row">
+        <div class="field"><label>Nombre *</label><input type="text" id="usuario-nombre" placeholder="Nombre" /></div>
+        <div class="field"><label>Apellidos</label><input type="text" id="usuario-apellidos" placeholder="Apellidos" /></div>
+      </div>
+      <div class="field"><label>Email *</label><input type="email" id="usuario-email" placeholder="email@lavanderia.com" /></div>
+      <div class="field">
+        <label id="usuario-password-label">Contraseña *</label>
+        <input type="password" id="usuario-password" placeholder="Mínimo 6 caracteres" />
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Rol *</label>
+          <select id="usuario-rol">
+            <option value="2">Empleado</option>
+            <option value="1">Administrador</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Estado</label>
+          <select id="usuario-activo">
+            <option value="1">Activo</option>
+            <option value="0">Inactivo</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="cerrarModal('modal-usuario')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarUsuario()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FACTURA MANUAL -->
+<div class="modal-overlay" id="modal-factura">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Nueva factura manual</span>
+      <button class="modal-close" onclick="cerrarModal('modal-factura')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Pedido *</label><select id="factura-pedido"><option value="">— Selecciona un pedido —</option></select></div>
+      <div class="field"><label>Base imponible (€)</label><input type="number" id="factura-manual-base" placeholder="0.00" step="0.01" min="0" /></div>
+      <div class="field"><label>Fecha de emisión</label><input type="date" id="factura-manual-fecha" /></div>
+      <p style="font-size:.82rem;color:var(--text-soft)">El IVA del 21% se calculará automáticamente.</p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="cerrarModal('modal-factura')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarFacturaManual()">Crear factura</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR FACTURA -->
+<div class="modal-overlay" id="modal-factura-editar">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Editar factura</span>
+      <button class="modal-close" onclick="cerrarModal('modal-factura-editar')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="factura-id" />
+      <div class="field"><label>Base imponible (€)</label><input type="number" id="factura-base" placeholder="0.00" step="0.01" min="0" /></div>
+      <div class="field"><label>Estado de pago</label>
+        <select id="factura-pagada">
+          <option value="0">Pendiente de pago</option>
+          <option value="1">Pagada</option>
+        </select>
+      </div>
+      <div class="field"><label>Fecha de pago</label><input type="date" id="factura-fecha-pago" /></div>
+      <p style="font-size:.82rem;color:var(--text-soft)">El IVA se recalculará automáticamente al guardar.</p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="cerrarModal('modal-factura-editar')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarFacturaEditar()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = '/lavanderia-app/backend';
+const pages = {
+  dashboard: { title: 'Panel general',  subtitle: 'Resumen del sistema' },
+  clientes:  { title: 'Clientes',       subtitle: 'Gestión de clientes' },
+  pedidos:   { title: 'Pedidos',        subtitle: 'Gestión de pedidos' },
+  sacos:     { title: 'Sacos',           subtitle: 'Sacos recibidos por fecha' },
+  facturas:  { title: 'Facturación',    subtitle: 'Facturas generadas' },
+  productos: { title: 'Productos',      subtitle: 'Control de stock' },
+  usuarios:  { title: 'Usuarios',       subtitle: 'Gestión de accesos' },
+};
+
+function navTo(section) {
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelector(`[data-section="${section}"]`).classList.add('active');
+  document.getElementById(`sec-${section}`).classList.add('active');
+  document.getElementById('page-title').textContent    = pages[section].title;
+  document.getElementById('page-subtitle').textContent = pages[section].subtitle;
+  if (section === 'clientes')  cargarClientes();
+  if (section === 'pedidos')   cargarPedidos();
+  if (section === 'productos') cargarProductos();
+  if (section === 'sacos')     cargarSacosAdmin();
+  if (section === 'facturas')  cargarFacturas();
+  if (section === 'usuarios')  cargarUsuarios();
+}
+document.querySelectorAll('.nav-item').forEach(i => i.addEventListener('click', () => navTo(i.dataset.section)));
+function cerrarSesion() { sessionStorage.removeItem('lav_user'); localStorage.removeItem('lav_user'); window.location.href = 'login.html'; }
+
+function toast(msg, tipo = 'ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (tipo === 'error' ? ' error' : '');
+  setTimeout(() => t.className = 'toast', 3000);
+}
+function abrirModal(id) { document.getElementById(id).classList.add('open'); }
+function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
+
+/* ── CLIENTES ── */
+async function cargarClientes() {
+  const res = await fetch(`${API}/clientes.php`);
+  const data = await res.json();
+  const tbody = document.getElementById('tabla-clientes');
+  document.getElementById('stat-clientes').textContent = data.length || 0;
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:1rem;color:var(--text-hint)">No hay clientes registrados</td></tr>'; return; }
+  tbody.innerHTML = data.map(c => `
+    <tr>
+      <td>${c.nombre} ${c.apellidos}</td>
+      <td>${c.telefono || '—'}</td>
+      <td>${c.email || '—'}</td>
+      <td style="display:flex;gap:.4rem">
+        <button class="btn-table btn-edit" onclick='editarCliente(${JSON.stringify(c)})'>Editar</button>
+        <button class="btn-table btn-delete" onclick="eliminarCliente(${c.id})">Eliminar</button>
+      </td>
+    </tr>`).join('');
+}
+
+function abrirModalCliente() {
+  ['cliente-id','cliente-nombre','cliente-apellidos','cliente-telefono','cliente-email','cliente-direccion'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('modal-cliente-titulo').textContent = 'Nuevo cliente';
+  abrirModal('modal-cliente');
+}
+
+function editarCliente(c) {
+  document.getElementById('cliente-id').value        = c.id;
+  document.getElementById('cliente-nombre').value    = c.nombre;
+  document.getElementById('cliente-apellidos').value = c.apellidos;
+  document.getElementById('cliente-telefono').value  = c.telefono || '';
+  document.getElementById('cliente-email').value     = c.email || '';
+  document.getElementById('cliente-direccion').value = c.direccion || '';
+  document.getElementById('modal-cliente-titulo').textContent = 'Editar cliente';
+  abrirModal('modal-cliente');
+}
+
+async function guardarCliente() {
+  const id        = document.getElementById('cliente-id').value;
+  const nombre    = document.getElementById('cliente-nombre').value.trim();
+  const apellidos = document.getElementById('cliente-apellidos').value.trim();
+  if (!nombre || !apellidos) { toast('Nombre y apellidos son obligatorios', 'error'); return; }
+  const body = { nombre, apellidos, telefono: document.getElementById('cliente-telefono').value, email: document.getElementById('cliente-email').value, direccion: document.getElementById('cliente-direccion').value };
+  if (id) body.id = id;
+  const res  = await fetch(`${API}/clientes.php`, { method: id ? 'PUT' : 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  const data = await res.json();
+  if (data.ok) { toast(id ? 'Cliente actualizado' : 'Cliente creado correctamente'); cerrarModal('modal-cliente'); cargarClientes(); }
+  else toast(data.error || 'Error al guardar', 'error');
+}
+
+async function eliminarCliente(id) {
+  if (!confirm('¿Eliminar este cliente?')) return;
+  const res  = await fetch(`${API}/clientes.php?id=${id}`, { method: 'DELETE' });
+  const data = await res.json();
+  if (data.ok) { toast('Cliente eliminado'); cargarClientes(); }
+  else toast('Error al eliminar', 'error');
+}
+
+/* ── PEDIDOS ── */
+const estadoClass = { 'PENDIENTE':'pendiente','EN_PROCESO':'proceso','FINALIZADO':'finalizado','ENTREGADO':'entregado' };
+
+async function cargarPedidos() {
+  const res  = await fetch(`${API}/pedidos.php`);
+  const data = await res.json();
+  const tbody = document.getElementById('tabla-pedidos');
+  document.getElementById('stat-pedidos').textContent = data.filter(p => p.estado !== 'ENTREGADO').length;
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:1rem;color:var(--text-hint)">No hay pedidos</td></tr>'; return; }
+  tbody.innerHTML = data.map(p => `
+    <tr>
+      <td>#${String(p.pedido_id).padStart(4,'0')}</td>
+      <td>${p.cliente}</td>
+      <td>${p.fecha_entrada}</td>
+      <td><span class="badge ${estadoClass[p.estado]||'pendiente'}">${p.estado}</span></td>
+      <td><button class="btn-table btn-edit" onclick="cambiarEstado(${p.pedido_id},'${p.estado}')">Avanzar estado</button></td>
+    </tr>`).join('');
+  const dash = document.getElementById('dash-pedidos');
+  if (dash) dash.innerHTML = data.slice(0,5).map(p => `
+    <tr>
+      <td>#${String(p.pedido_id).padStart(4,'0')}</td>
+      <td>${p.cliente}</td>
+      <td><span class="badge ${estadoClass[p.estado]||'pendiente'}">${p.estado}</span></td>
+      <td>${p.peso_total_kg} kg</td>
+    </tr>`).join('');
+}
+
+async function abrirModalPedido() {
+  const res      = await fetch(`${API}/clientes.php`);
+  const clientes = await res.json();
+  document.getElementById('pedido-cliente').innerHTML =
+    '<option value="">— Selecciona un cliente —</option>' +
+    clientes.map(c => `<option value="${c.id}">${c.nombre} ${c.apellidos}</option>`).join('');
+  abrirModal('modal-pedido');
+}
+
+async function guardarPedido() {
+  const cliente_id = document.getElementById('pedido-cliente').value;
+  const peso       = document.getElementById('pedido-peso').value;
+  if (!cliente_id) { toast('Selecciona un cliente', 'error'); return; }
+  if (!peso || peso <= 0) { toast('Introduce el peso del saco', 'error'); return; }
+  const body = { cliente_id: parseInt(cliente_id), empleado_id: 1, fecha_estimada: document.getElementById('pedido-fecha').value, observaciones: document.getElementById('pedido-obs').value };
+  const res  = await fetch(`${API}/pedidos.php`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  const data = await res.json();
+  if (data.ok) { toast('Pedido creado correctamente'); cerrarModal('modal-pedido'); cargarPedidos(); }
+  else toast(data.error || 'Error al crear pedido', 'error');
+}
+
+async function cambiarEstado(id, estadoActual) {
+  const estados = ['PENDIENTE','EN_PROCESO','FINALIZADO','ENTREGADO'];
+  if (estadoActual === 'ENTREGADO') { toast('Este pedido ya está entregado', 'error'); return; }
+  const estadoId = Math.min(estados.indexOf(estadoActual) + 2, 4);
+  const res  = await fetch(`${API}/pedidos.php`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id, estado_id: estadoId }) });
+  const data = await res.json();
+  if (data.ok) { toast(`Estado actualizado`); cargarPedidos(); }
+  else toast('Error al cambiar estado', 'error');
+}
+
+/* ── PRODUCTOS ── */
+async function cargarProductos() {
+  const res  = await fetch(`${API}/productos.php`);
+  const data = await res.json();
+  const tbody = document.getElementById('tabla-productos');
+  const bajos = data.filter(p => parseInt(p.stock_actual) < parseInt(p.stock_minimo)).length;
+  document.getElementById('stat-stock').textContent = bajos;
+  document.getElementById('stat-stock-delta').textContent = bajos > 0 ? 'Requiere atención' : 'Stock OK';
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:1rem;color:var(--text-hint)">No hay productos</td></tr>'; return; }
+  tbody.innerHTML = data.map(p => {
+    const bajo = parseInt(p.stock_actual) < parseInt(p.stock_minimo);
+    return `<tr>
+      <td>${p.nombre}</td><td>${p.categoria}</td><td>${p.stock_actual}</td><td>${p.stock_minimo}</td>
+      <td>${parseFloat(p.precio_unidad).toFixed(2)}€</td>
+      <td><span class="badge ${bajo?'pendiente':'finalizado'}">${bajo?'Stock bajo':'OK'}</span></td>
+      <td style="display:flex;gap:.4rem">
+        <button class="btn-table btn-edit" onclick='editarProducto(${JSON.stringify(p)})'>Editar</button>
+        <button class="btn-table btn-delete" onclick="eliminarProducto(${p.id})">Eliminar</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function abrirModalProducto() {
+  ['producto-id','producto-nombre','producto-stock','producto-precio'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('producto-minimo').value = '5';
+  document.getElementById('modal-producto-titulo').textContent = 'Nuevo producto';
+  abrirModal('modal-producto');
+}
+
+function editarProducto(p) {
+  document.getElementById('producto-id').value        = p.id;
+  document.getElementById('producto-nombre').value    = p.nombre;
+  document.getElementById('producto-categoria').value = p.categoria_id;
+  document.getElementById('producto-stock').value     = p.stock_actual;
+  document.getElementById('producto-minimo').value    = p.stock_minimo;
+  document.getElementById('producto-precio').value    = p.precio_unidad;
+  document.getElementById('modal-producto-titulo').textContent = 'Editar producto';
+  abrirModal('modal-producto');
+}
+
+async function guardarProducto() {
+  const id     = document.getElementById('producto-id').value;
+  const nombre = document.getElementById('producto-nombre').value.trim();
+  if (!nombre) { toast('El nombre es obligatorio', 'error'); return; }
+  const body = { nombre, categoria_id: parseInt(document.getElementById('producto-categoria').value), stock_actual: parseInt(document.getElementById('producto-stock').value)||0, stock_minimo: parseInt(document.getElementById('producto-minimo').value)||5, precio_unidad: parseFloat(document.getElementById('producto-precio').value)||0 };
+  if (id) body.id = id;
+  const res  = await fetch(`${API}/productos.php`, { method: id ? 'PUT' : 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  const data = await res.json();
+  if (data.ok) { toast(id ? 'Producto actualizado' : 'Producto creado'); cerrarModal('modal-producto'); cargarProductos(); }
+  else toast(data.error || 'Error al guardar', 'error');
+}
+
+async function eliminarProducto(id) {
+  if (!confirm('¿Eliminar este producto?')) return;
+  const res  = await fetch(`${API}/productos.php?id=${id}`, { method: 'DELETE' });
+  const data = await res.json();
+  if (data.ok) { toast('Producto eliminado'); cargarProductos(); }
+  else toast('Error al eliminar', 'error');
+}
+
+/* ── FACTURAS ── */
+async function cargarFacturas() {
+  const res   = await fetch(`${API}/facturas.php`);
+  const data  = await res.json();
+  const tbody = document.getElementById('tabla-facturas');
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:1rem;color:var(--text-hint)">No hay facturas. Usa el botón para generar las del mes.</td></tr>'; return; }
+  tbody.innerHTML = data.map(f => `
+    <tr>
+      <td>${f.numero_factura}</td>
+      <td>${f.cliente}</td>
+      <td>${f.fecha_emision}</td>
+      <td>${parseFloat(f.base_imponible).toFixed(2)}€</td>
+      <td>${parseFloat(f.iva_importe).toFixed(2)}€</td>
+      <td><strong>${parseFloat(f.total).toFixed(2)}€</strong></td>
+      <td><span class="badge ${f.pagada=='1'?'finalizado':'pendiente'}">${f.pagada=='1'?'Pagada':'Pendiente'}</span></td>
+      <td style="display:flex;gap:.4rem">
+        <button class="btn-table btn-edit" onclick='editarFactura(${JSON.stringify(f)})'>Editar</button>
+        <button class="btn-table btn-delete" onclick="eliminarFactura(${f.id})">Borrar</button>
+        ${f.pagada!='1' ? `<button class="btn-table" style="background:#e6f9f0;color:#15803d" onclick="marcarPagada(${f.id})">Cobrar</button>` : ''}
+      </td>
+    </tr>`).join('');
+}
+
+async function generarFacturasMes() {
+  const mes = document.getElementById('mes-facturacion').value;
+  if (!mes) { toast('Selecciona un mes primero', 'error'); return; }
+  const res  = await fetch(`${API}/facturas.php?generar_mes=${mes}`);
+  const data = await res.json();
+  if (data.ok) {
+    toast(`${data.generadas} factura(s) generada(s) para ${mes}`);
+    cargarFacturas();
+  } else toast(data.error || 'Error al generar', 'error');
+}
+
+async function abrirModalFactura() {
+  const res     = await fetch(`${API}/pedidos.php`);
+  const pedidos = await res.json();
+  document.getElementById('factura-pedido').innerHTML =
+    '<option value="">— Selecciona un pedido —</option>' +
+    pedidos.map(p => `<option value="${p.pedido_id}">#${String(p.pedido_id).padStart(4,'0')} — ${p.cliente} (${p.estado})</option>`).join('');
+  document.getElementById('factura-manual-fecha').value = new Date().toISOString().split('T')[0];
+  abrirModal('modal-factura');
+}
+
+function editarFactura(f) {
+  document.getElementById('factura-id').value    = f.id;
+  document.getElementById('factura-base').value  = parseFloat(f.base_imponible).toFixed(2);
+  document.getElementById('factura-pagada').value = f.pagada;
+  document.getElementById('factura-fecha-pago').value = f.fecha_pago || '';
+  abrirModal('modal-factura-editar');
+}
+
+async function guardarFacturaEditar() {
+  const id     = document.getElementById('factura-id').value;
+  const base   = parseFloat(document.getElementById('factura-base').value) || 0;
+  const pagada = parseInt(document.getElementById('factura-pagada').value);
+  const fp     = document.getElementById('factura-fecha-pago').value;
+  const res    = await fetch(`${API}/facturas.php`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id, base_imponible: base, pagada, fecha_pago: fp }) });
+  const data   = await res.json();
+  if (data.ok) { toast('Factura actualizada'); cerrarModal('modal-factura-editar'); cargarFacturas(); }
+  else toast(data.error || 'Error al actualizar', 'error');
+}
+
+async function marcarPagada(id) {
+  const res  = await fetch(`${API}/facturas.php`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id, pagada: 1, fecha_pago: new Date().toISOString().split('T')[0] }) });
+  const data = await res.json();
+  if (data.ok) { toast('Factura marcada como pagada'); cargarFacturas(); }
+  else toast('Error', 'error');
+}
+
+async function eliminarFactura(id) {
+  if (!confirm('¿Eliminar esta factura?')) return;
+  const res  = await fetch(`${API}/facturas.php?id=${id}`, { method: 'DELETE' });
+  const data = await res.json();
+  if (data.ok) { toast('Factura eliminada'); cargarFacturas(); }
+  else toast('Error al eliminar', 'error');
+}
+
+async function guardarFacturaManual() {
+  const pedido_id = document.getElementById('factura-pedido').value;
+  const base      = parseFloat(document.getElementById('factura-manual-base').value) || 0;
+  const fecha     = document.getElementById('factura-manual-fecha').value;
+  if (!pedido_id) { toast('Selecciona un pedido', 'error'); return; }
+  const res  = await fetch(`${API}/facturas.php`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ pedido_id: parseInt(pedido_id), base_imponible: base, fecha_emision: fecha }) });
+  const data = await res.json();
+  if (data.ok) { toast(`Factura ${data.numero} creada`); cerrarModal('modal-factura'); cargarFacturas(); }
+  else toast(data.error || 'Error al crear factura', 'error');
+}
+
+/* ── USUARIOS ── */
+async function cargarUsuarios() {
+  const res   = await fetch(`${API}/usuarios.php`);
+  const data  = await res.json();
+  const tbody = document.getElementById('tabla-usuarios');
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:1rem;color:var(--text-hint)">No hay usuarios</td></tr>'; return; }
+  tbody.innerHTML = data.map(u => `
+    <tr>
+      <td>${u.nombre} ${u.apellidos}</td>
+      <td>${u.email}</td>
+      <td><span class="badge ${u.rol==='ADMIN'?'proceso':'pendiente'}">${u.rol}</span></td>
+      <td>${u.ultimo_login ? u.ultimo_login : '—'}</td>
+      <td><span class="badge ${u.activo=='1'?'finalizado':'pendiente'}">${u.activo=='1'?'Activo':'Inactivo'}</span></td>
+      <td style="display:flex;gap:.4rem">
+        <button class="btn-table btn-edit" onclick='editarUsuario(${JSON.stringify(u)})'>Editar</button>
+        <button class="btn-table btn-delete" onclick="desactivarUsuario(${u.id})">Desactivar</button>
+      </td>
+    </tr>`).join('');
+}
+
+function abrirModalUsuario() {
+  ['usuario-id','usuario-nombre','usuario-apellidos','usuario-email','usuario-password'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('usuario-rol').value = '2';
+  document.getElementById('usuario-activo').value = '1';
+  document.getElementById('modal-usuario-titulo').textContent = 'Nuevo usuario';
+  document.getElementById('usuario-password-label').textContent = 'Contraseña *';
+  abrirModal('modal-usuario');
+}
+
+function editarUsuario(u) {
+  document.getElementById('usuario-id').value        = u.id;
+  document.getElementById('usuario-nombre').value    = u.nombre;
+  document.getElementById('usuario-apellidos').value = u.apellidos;
+  document.getElementById('usuario-email').value     = u.email;
+  document.getElementById('usuario-password').value  = '';
+  document.getElementById('usuario-rol').value       = u.rol_id;
+  document.getElementById('usuario-activo').value    = u.activo;
+  document.getElementById('modal-usuario-titulo').textContent = 'Editar usuario';
+  document.getElementById('usuario-password-label').textContent = 'Nueva contraseña (dejar vacío para no cambiar)';
+  abrirModal('modal-usuario');
+}
+
+async function guardarUsuario() {
+  const id        = document.getElementById('usuario-id').value;
+  const nombre    = document.getElementById('usuario-nombre').value.trim();
+  const apellidos = document.getElementById('usuario-apellidos').value.trim();
+  const email     = document.getElementById('usuario-email').value.trim();
+  const password  = document.getElementById('usuario-password').value;
+  const rol_id    = parseInt(document.getElementById('usuario-rol').value);
+  const activo    = parseInt(document.getElementById('usuario-activo').value);
+
+  if (!nombre || !email) { toast('Nombre y email son obligatorios', 'error'); return; }
+  if (!id && !password)  { toast('La contraseña es obligatoria para nuevos usuarios', 'error'); return; }
+
+  const body = { nombre, apellidos, email, rol_id, activo };
+  if (id) body.id = id;
+  if (password) body.password = password;
+
+  const res  = await fetch(`${API}/usuarios.php`, { method: id ? 'PUT' : 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  const data = await res.json();
+  if (data.ok) { toast(id ? 'Usuario actualizado' : 'Usuario creado correctamente'); cerrarModal('modal-usuario'); cargarUsuarios(); }
+  else toast(data.error || 'Error al guardar', 'error');
+}
+
+async function desactivarUsuario(id) {
+  if (!confirm('¿Desactivar este usuario? No podrá iniciar sesión.')) return;
+  const res  = await fetch(`${API}/usuarios.php?id=${id}`, { method: 'DELETE' });
+  const data = await res.json();
+  if (data.ok) { toast('Usuario desactivado'); cargarUsuarios(); }
+  else toast('Error', 'error');
+}
+
+/* ── SACOS ADMIN ── */
+async function cargarSacosAdmin() {
+  const fechaInput = document.getElementById('fecha-sacos-admin');
+  const fecha = fechaInput.value || new Date().toISOString().split('T')[0];
+  const tipos = { 1:'Blanca', 2:'Color', 3:'Delicada', 4:'Ropa hogar', 5:'Especial', 6:'Toallas medianas', 7:'Toallas grandes', 8:'Alfombrines', 9:'Paños de cara', 10:'Baberos' };
+
+  const res     = await fetch(`${API}/pedidos.php`);
+  const pedidos = await res.json();
+  const pedidosDia = pedidos.filter(p => p.fecha_entrada === fecha);
+  const tbody = document.getElementById('tabla-sacos-admin');
+
+  if (!pedidosDia.length) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:1rem;color:var(--text-hint)">No hay sacos para el ${fecha}</td></tr>`;
+    document.getElementById('admin-total-sacos').textContent   = 0;
+    document.getElementById('admin-total-peso').textContent    = '0 kg';
+    document.getElementById('admin-total-importe').textContent = '0.00€';
+    return;
+  }
+
+  let filas = [], totalSacos = 0, totalPeso = 0, totalImporte = 0;
+  for (const p of pedidosDia) {
+    const resSacos = await fetch(`${API}/sacos.php?pedido_id=${p.pedido_id}`);
+    if (!resSacos.ok) continue;
+    const sacos = await resSacos.json();
+    for (const s of sacos) {
+      totalSacos++;
+      totalPeso    += parseFloat(s.peso_kg);
+      totalImporte += parseFloat(s.subtotal);
+      filas.push(`
+        <tr>
+          <td>${p.cliente}</td>
+          <td>${tipos[s.tipo_ropa_id] || s.tipo_ropa}</td>
+          <td><strong>${parseFloat(s.peso_kg).toFixed(1)} kg</strong></td>
+          <td>${parseFloat(s.precio_kg).toFixed(2)}€/kg</td>
+          <td>${parseFloat(s.subtotal).toFixed(2)}€</td>
+        </tr>`);
+    }
+  }
+
+  tbody.innerHTML = filas.length ? filas.join('') : `<tr><td colspan="5" style="text-align:center;padding:1rem;color:var(--text-hint)">No hay sacos para esta fecha</td></tr>`;
+  document.getElementById('admin-total-sacos').textContent   = totalSacos;
+  document.getElementById('admin-total-peso').textContent    = totalPeso.toFixed(1) + ' kg';
+  document.getElementById('admin-total-importe').textContent = totalImporte.toFixed(2) + '€';
+}
+
+/* ── SACO ADMIN ── */
+async function abrirModalSacoAdmin() {
+  const res      = await fetch(`${API}/clientes.php`);
+  const clientes = await res.json();
+  const selCliente = document.getElementById('saco-admin-cliente');
+  selCliente.innerHTML = '<option value="">— Selecciona un cliente —</option>' +
+    clientes.map(c => `<option value="${c.id}">${c.nombre} ${c.apellidos}</option>`).join('');
+  selCliente.onchange = null;
+  document.getElementById('saco-admin-peso').value = '';
+  document.getElementById('saco-admin-obs').value  = '';
+  const manana = new Date(); manana.setDate(manana.getDate() + 1);
+  document.getElementById('saco-admin-fecha').value = manana.toISOString().split('T')[0];
+  abrirModal('modal-saco-admin');
+}
+
+async function guardarSacoAdmin() {
+  const cliente_id   = document.getElementById('saco-admin-cliente').value;
+  const fecha        = document.getElementById('saco-admin-fecha').value;
+  const tipo_ropa_id = document.getElementById('saco-admin-tipo').value;
+  const peso_kg      = document.getElementById('saco-admin-peso').value;
+  const obs          = document.getElementById('saco-admin-obs').value;
+
+  if (!cliente_id)              { toast('Selecciona un cliente', 'error'); return; }
+  if (!fecha)                   { toast('Indica la fecha de entrega', 'error'); return; }
+  if (!peso_kg || peso_kg <= 0) { toast('Introduce el peso del saco', 'error'); return; }
+
+  // 1. Crear el pedido
+  const resPed  = await fetch(`${API}/pedidos.php`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ cliente_id: parseInt(cliente_id), empleado_id: 1, fecha_estimada: fecha, observaciones: obs })
+  });
+  const dataPed = await resPed.json();
+  if (!dataPed.ok) { toast(dataPed.error || 'Error al crear el pedido', 'error'); return; }
+
+  // 2. Crear el saco vinculado al pedido
+  const resSaco  = await fetch(`${API}/sacos.php`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ pedido_id: dataPed.id, tipo_ropa_id: parseInt(tipo_ropa_id), peso_kg: parseFloat(peso_kg) })
+  });
+  const dataSaco = await resSaco.json();
+  if (dataSaco.ok) {
+    toast('Saco registrado correctamente');
+    cerrarModal('modal-saco-admin');
+    cargarSacosAdmin();
+    cargarPedidos();
+  } else toast(dataSaco.error || 'Error al registrar saco', 'error');
+}
+
+window.addEventListener('load', () => {
+  cargarClientes();
+  cargarPedidos();
+  cargarProductos();
+  document.getElementById('fecha-sacos-admin').value = new Date().toISOString().split('T')[0];
+  // Poner mes actual por defecto en el selector de facturación
+  const hoy = new Date();
+  const mes = hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0');
+  const inputMes = document.getElementById('mes-facturacion');
+  if (inputMes) inputMes.value = mes;
+});
+</script>
+</body>
+</html>
