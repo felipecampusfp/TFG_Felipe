@@ -6,6 +6,7 @@
   <title>LavanderApp — Administrador</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -162,6 +163,12 @@
     </div>
   </nav>
   <div class="sidebar-foot">
+    <div style="padding:.5rem 0;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:.5rem">
+      <div class="nav-item" data-section="perfil" style="font-size:.82rem">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Mi perfil
+      </div>
+    </div>
     <div class="user-chip">
       <div class="user-avatar">AD</div>
       <div><div class="user-name">Admin</div><div class="user-role">Administrador</div></div>
@@ -185,29 +192,93 @@
 
     <!-- DASHBOARD -->
     <div class="section active" id="sec-dashboard">
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
-          <div class="stat-value" id="stat-clientes">—</div>
-          <div class="stat-label">Clientes registrados</div>
+
+      <!-- Tarjetas superiores de colores -->
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:.7rem;margin-bottom:1.2rem">
+
+        <div onclick="navTo('clientes')" style="background:linear-gradient(135deg,#3e85f5,#6ba3ff);border-radius:10px;padding:.9rem 1rem;cursor:pointer;color:#fff;display:flex;flex-direction:column;gap:.3rem;box-shadow:0 3px 12px rgba(62,133,245,.3);transition:transform .15s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.2rem">
+            <div style="background:rgba(255,255,255,.2);border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            </div>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div style="font-size:1.6rem;font-weight:700;line-height:1" id="stat-clientes">—</div>
+          <div style="font-size:.75rem;opacity:.85">Clientes</div>
         </div>
-        <div class="stat-card">
-          <div class="stat-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/></svg></div>
-          <div class="stat-value" id="stat-pedidos">—</div>
-          <div class="stat-label">Pedidos activos</div>
+
+        <div onclick="navTo('pedidos')" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);border-radius:10px;padding:.9rem 1rem;cursor:pointer;color:#fff;display:flex;flex-direction:column;gap:.3rem;box-shadow:0 3px 12px rgba(245,158,11,.3);transition:transform .15s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.2rem">
+            <div style="background:rgba(255,255,255,.2);border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/></svg>
+            </div>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div style="font-size:1.6rem;font-weight:700;line-height:1" id="stat-pedidos">—</div>
+          <div style="font-size:.75rem;opacity:.85">Pedidos activos</div>
         </div>
-        <div class="stat-card">
-          <div class="stat-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></div>
-          <div class="stat-value" id="stat-stock">—</div>
-          <div class="stat-label">Productos bajo mínimo</div>
-          <div class="stat-delta" id="stat-stock-delta" style="color:#ef4444"></div>
+
+        <div onclick="navTo('productos')" style="background:linear-gradient(135deg,#ef4444,#f87171);border-radius:10px;padding:.9rem 1rem;cursor:pointer;color:#fff;display:flex;flex-direction:column;gap:.3rem;box-shadow:0 3px 12px rgba(239,68,68,.3);transition:transform .15s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.2rem">
+            <div style="background:rgba(255,255,255,.2);border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+            </div>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div style="font-size:1.6rem;font-weight:700;line-height:1" id="stat-stock">—</div>
+          <div style="font-size:.75rem;opacity:.85">Stock bajo</div>
+          <div style="font-size:.7rem;opacity:.7" id="stat-stock-delta"></div>
         </div>
-        <div class="stat-card">
-          <div class="stat-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
-          <div class="stat-value">2</div>
-          <div class="stat-label">Empleados activos</div>
+
+        <div onclick="navTo('facturas')" style="background:linear-gradient(135deg,#22c55e,#4ade80);border-radius:10px;padding:.9rem 1rem;cursor:pointer;color:#fff;display:flex;flex-direction:column;gap:.3rem;box-shadow:0 3px 12px rgba(34,197,94,.3);transition:transform .15s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.2rem">
+            <div style="background:rgba(255,255,255,.2);border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+            </div>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div style="font-size:1.6rem;font-weight:700;line-height:1" id="stat-facturas">—</div>
+          <div style="font-size:.75rem;opacity:.85">Facturas este mes</div>
         </div>
+
+        <div onclick="navTo('usuarios')" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa);border-radius:10px;padding:.9rem 1rem;cursor:pointer;color:#fff;display:flex;flex-direction:column;gap:.3rem;box-shadow:0 3px 12px rgba(139,92,246,.3);transition:transform .15s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.2rem">
+            <div style="background:rgba(255,255,255,.2);border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div style="font-size:1.6rem;font-weight:700;line-height:1" id="stat-usuarios">—</div>
+          <div style="font-size:.75rem;opacity:.85">Empleados activos</div>
+        </div>
+
       </div>
+
+      <!-- Alertas inteligentes IA -->
+      <div id="alertas-ia" style="margin-bottom:1rem;display:flex;flex-direction:column;gap:.5rem"></div>
+
+      <!-- Gráficas + tabla -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.2rem">
+
+        <!-- Gráfica de barras: pedidos por estado -->
+        <div class="panel">
+          <div class="panel-head"><span class="panel-title">Pedidos por estado</span></div>
+          <div class="panel-body" style="padding:.8rem;height:220px;overflow:hidden">
+            <canvas id="chart-estados" style="max-height:170px"></canvas>
+          </div>
+        </div>
+
+        <!-- Gráfica de tarta: tipos de ropa -->
+        <div class="panel">
+          <div class="panel-head"><span class="panel-title">Sacos de hoy por tipo</span></div>
+          <div class="panel-body" style="padding:.8rem;display:flex;align-items:center;justify-content:center;height:220px;overflow:hidden">
+            <canvas id="chart-tipos" style="max-width:160px;max-height:160px"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Últimos pedidos -->
       <div class="panel">
         <div class="panel-head">
           <span class="panel-title">Últimos pedidos</span>
@@ -220,6 +291,7 @@
           </table>
         </div>
       </div>
+
     </div>
 
     <!-- CLIENTES -->
@@ -227,7 +299,10 @@
       <div class="panel">
         <div class="panel-head">
           <span class="panel-title">Clientes registrados</span>
-          <button class="panel-action" onclick="abrirModalCliente()">+ Nuevo cliente</button>
+          <div style="display:flex;gap:.5rem;align-items:center">
+            <input type="text" id="buscar-cliente" placeholder="🔍 Buscar cliente..." oninput="filtrarClientes()" style="padding:.4rem .8rem;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.85rem;outline:none;width:200px" />
+            <button class="panel-action" onclick="abrirModalCliente()">+ Nuevo cliente</button>
+          </div>
         </div>
         <div class="panel-body" style="padding:0">
           <table class="data-table">
@@ -243,11 +318,23 @@
       <div class="panel">
         <div class="panel-head">
           <span class="panel-title">Todos los pedidos</span>
-          <button class="panel-action" onclick="abrirModalPedido()">+ Nuevo pedido</button>
+          <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+            <input type="text" id="buscar-pedido" placeholder="🔍 Buscar cliente..." oninput="filtrarPedidos()" style="padding:.4rem .8rem;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.85rem;outline:none;width:180px" />
+            <select id="filtro-estado-pedido" onchange="filtrarPedidos()" style="padding:.4rem .7rem;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.85rem;outline:none">
+              <option value="">Todos los estados</option>
+              <option value="PENDIENTE">Pendiente</option>
+              <option value="EN_PROCESO">En proceso</option>
+              <option value="FINALIZADO">Finalizado</option>
+              <option value="ENTREGADO">Entregado</option>
+            </select>
+            <input type="date" id="filtro-fecha-pedido" onchange="filtrarPedidos()" style="padding:.4rem .7rem;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.85rem;outline:none" />
+            <button onclick="limpiarFiltrosPedidos()" style="background:none;border:none;cursor:pointer;color:var(--text-hint);font-size:.8rem;font-family:inherit">✕ Limpiar</button>
+            <button class="panel-action" onclick="abrirModalPedido()">+ Nuevo pedido</button>
+          </div>
         </div>
         <div class="panel-body" style="padding:0">
           <table class="data-table">
-            <thead><tr><th>#</th><th>Cliente</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <thead><tr><th>#</th><th>Cliente</th><th>Fecha</th><th>Sacos / Peso</th><th>Estado</th><th>Acciones</th></tr></thead>
             <tbody id="tabla-pedidos"><tr><td colspan="5" style="text-align:center;padding:1rem;color:var(--text-hint)">Cargando...</td></tr></tbody>
           </table>
         </div>
@@ -280,22 +367,160 @@
 
     <!-- FACTURAS -->
     <div class="section" id="sec-facturas">
-      <div class="panel" style="margin-bottom:1rem">
-        <div class="panel-head">
-          <span class="panel-title">Facturación mensual</span>
-          <div style="display:flex;gap:.6rem;align-items:center">
+
+      <!-- Vista lista (estilo Odoo) -->
+      <div id="fact-lista">
+        <!-- Barra de acciones -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.6rem">
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <button onclick="abrirNuevaFactura()" style="background:var(--brand-accent);color:#fff;padding:.55rem 1.1rem;border-radius:8px;border:none;cursor:pointer;font-weight:600;font-family:inherit;font-size:.88rem">+ Nueva factura</button>
+            <button onclick="generarFacturasMes()" style="background:#f5f7fa;color:var(--text-main);padding:.55rem 1.1rem;border-radius:8px;border:1px solid var(--border);cursor:pointer;font-weight:600;font-family:inherit;font-size:.88rem">🔄 Generar del mes</button>
+            <button onclick="exportarExcel()" style="background:#f5f7fa;color:#15803d;padding:.55rem 1.1rem;border-radius:8px;border:1px solid #bbf7d0;cursor:pointer;font-weight:600;font-family:inherit;font-size:.88rem">⬇ Exportar Excel</button>
+          </div>
+          <div style="display:flex;gap:.5rem;align-items:center">
             <input type="month" id="mes-facturacion" style="padding:.4rem .7rem;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.85rem;outline:none" />
-            <button class="panel-action" style="background:var(--brand-accent);color:#fff;padding:.4rem .9rem;border-radius:8px;border:none;cursor:pointer;font-weight:600" onclick="generarFacturasMes()">Generar facturas del mes</button>
-            <button class="panel-action" onclick="abrirModalFactura()">+ Nueva factura manual</button>
+            <!-- Filtros estado -->
+            <select id="filtro-estado-fact" onchange="cargarFacturas()" style="padding:.4rem .7rem;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.85rem;outline:none">
+              <option value="">Todos los estados</option>
+              <option value="borrador">Borrador</option>
+              <option value="confirmada">Confirmada</option>
+              <option value="pagada">Pagada</option>
+              <option value="cancelada">Cancelada</option>
+            </select>
           </div>
         </div>
-        <div class="panel-body" style="padding:0">
-          <table class="data-table">
-            <thead><tr><th>Nº Factura</th><th>Cliente</th><th>Fecha</th><th>Base</th><th>IVA 21%</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead>
-            <tbody id="tabla-facturas"><tr><td colspan="8" style="text-align:center;padding:1rem;color:var(--text-hint)">Cargando...</td></tr></tbody>
-          </table>
+
+        <!-- Resumen rápido -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.7rem;margin-bottom:1rem" id="fact-resumen">
+          <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem">
+            <div style="font-size:.75rem;color:var(--text-soft);text-transform:uppercase;letter-spacing:.4px">Total facturas</div>
+            <div style="font-size:1.4rem;font-weight:700;color:var(--text-main)" id="fr-total">—</div>
+          </div>
+          <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem">
+            <div style="font-size:.75rem;color:var(--text-soft);text-transform:uppercase;letter-spacing:.4px">Importe total</div>
+            <div style="font-size:1.4rem;font-weight:700;color:var(--text-main)" id="fr-importe">—</div>
+          </div>
+          <div style="background:#e6f9f0;border:1px solid #bbf7d0;border-radius:10px;padding:.8rem 1rem">
+            <div style="font-size:.75rem;color:#15803d;text-transform:uppercase;letter-spacing:.4px">Cobrado</div>
+            <div style="font-size:1.4rem;font-weight:700;color:#15803d" id="fr-cobrado">—</div>
+          </div>
+          <div style="background:#fff8e6;border:1px solid #fde68a;border-radius:10px;padding:.8rem 1rem">
+            <div style="font-size:.75rem;color:#b45309;text-transform:uppercase;letter-spacing:.4px">Pendiente</div>
+            <div style="font-size:1.4rem;font-weight:700;color:#b45309" id="fr-pendiente">—</div>
+          </div>
+        </div>
+
+        <!-- Tabla estilo Odoo -->
+        <div class="panel">
+          <div class="panel-body" style="padding:0">
+            <table class="data-table" id="tabla-facturas-wrap">
+              <thead>
+                <tr style="background:#f5f7fa">
+                  <th style="width:32px"><input type="checkbox" id="check-all-fact" onchange="toggleAllFacturas(this)"></th>
+                  <th>Nº Factura</th>
+                  <th>Cliente</th>
+                  <th>Fecha emisión</th>
+                  <th>Fecha venc.</th>
+                  <th style="text-align:right">Base</th>
+                  <th style="text-align:right">IVA</th>
+                  <th style="text-align:right">Total</th>
+                  <th>Estado</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="tabla-facturas"><tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--text-hint)">Cargando...</td></tr></tbody>
+            </table>
+          </div>
         </div>
       </div>
+
+      <!-- Vista detalle factura (estilo Odoo form) -->
+      <div id="fact-detalle" style="display:none">
+        <!-- Barra superior -->
+        <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1.2rem">
+          <button onclick="volverListaFacturas()" style="background:#f5f7fa;border:1px solid var(--border);border-radius:8px;padding:.5rem .9rem;cursor:pointer;font-family:inherit;font-size:.85rem;font-weight:600">← Volver</button>
+          <div style="flex:1;font-size:1.1rem;font-weight:700;color:var(--text-main)" id="fact-titulo">Nueva factura</div>
+          <div style="display:flex;gap:.5rem" id="fact-botones"></div>
+        </div>
+
+        <!-- Formulario estilo Odoo -->
+        <div style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
+          <!-- Estado badge -->
+          <div style="padding:.8rem 1.4rem;background:#f5f7fa;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.8rem">
+            <span id="fact-estado-badge" class="badge">BORRADOR</span>
+            <span style="font-size:.8rem;color:var(--text-soft)" id="fact-estado-desc">Esta factura está en modo borrador. Confírmala para hacerla oficial.</span>
+          </div>
+
+          <div style="padding:1.4rem;display:grid;grid-template-columns:1fr 1fr;gap:1.4rem">
+            <!-- Columna izquierda -->
+            <div style="display:flex;flex-direction:column;gap:1rem">
+              <div class="field">
+                <label>Cliente *</label>
+                <select id="fact-cliente" onchange="cargarPedidosCliente()">
+                  <option value="">— Selecciona un cliente —</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Pedido asociado</label>
+                <select id="fact-pedido"><option value="">— Selecciona un pedido —</option></select>
+              </div>
+              <div class="field">
+                <label>Notas / observaciones</label>
+                <input type="text" id="fact-notas" placeholder="Notas internas..." />
+              </div>
+            </div>
+            <!-- Columna derecha -->
+            <div style="display:flex;flex-direction:column;gap:1rem">
+              <div class="field">
+                <label>Número de factura</label>
+                <input type="text" id="fact-numero" placeholder="Se genera automáticamente" disabled style="background:#f5f7fa;color:var(--text-soft)" />
+              </div>
+              <div class="field">
+                <label>Fecha de emisión</label>
+                <input type="date" id="fact-fecha" />
+              </div>
+              <div class="field">
+                <label>Fecha de vencimiento</label>
+                <input type="date" id="fact-vencimiento" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Líneas de factura -->
+          <div style="padding:0 1.4rem 1.4rem">
+            <div style="font-size:.85rem;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.6rem">Conceptos</div>
+            <table style="width:100%;border-collapse:collapse;font-size:.88rem">
+              <thead>
+                <tr style="background:#f5f7fa">
+                  <th style="text-align:left;padding:.5rem .6rem;border:1px solid var(--border)">Descripción</th>
+                  <th style="text-align:right;padding:.5rem .6rem;border:1px solid var(--border);width:80px">Cant.</th>
+                  <th style="text-align:right;padding:.5rem .6rem;border:1px solid var(--border);width:100px">Precio/u</th>
+                  <th style="text-align:right;padding:.5rem .6rem;border:1px solid var(--border);width:100px">Subtotal</th>
+                  <th style="padding:.5rem .6rem;border:1px solid var(--border);width:36px"></th>
+                </tr>
+              </thead>
+              <tbody id="fact-lineas"></tbody>
+            </table>
+            <button onclick="addLinea()" style="margin-top:.6rem;background:none;border:1px dashed var(--border);border-radius:6px;padding:.4rem 1rem;cursor:pointer;font-family:inherit;font-size:.82rem;color:var(--brand-accent);font-weight:500">+ Añadir línea</button>
+          </div>
+
+          <!-- Totales -->
+          <div style="padding:1rem 1.4rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end">
+            <div style="width:280px;display:flex;flex-direction:column;gap:.4rem;font-size:.9rem">
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--text-soft)">Base imponible:</span><span id="fact-base-total" style="font-weight:500">0,00 €</span></div>
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--text-soft)">IVA (21%):</span><span id="fact-iva-total" style="font-weight:500">0,00 €</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:1.05rem;font-weight:700;border-top:2px solid var(--text-main);padding-top:.4rem;margin-top:.2rem"><span>TOTAL:</span><span id="fact-total-total" style="color:var(--brand-accent)">0,00 €</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón guardar abajo -->
+        <div style="margin-top:1rem;display:flex;gap:.6rem" id="fact-guardar-area">
+          <button onclick="guardarFacturaNueva()" class="btn btn-primary">Guardar borrador</button>
+          <button onclick="volverListaFacturas()" class="btn btn-secondary">Cancelar</button>
+        </div>
+      </div>
+
     </div>
 
     <!-- PRODUCTOS -->
@@ -330,6 +555,43 @@
       </div>
     </div>
 
+
+    <!-- PERFIL -->
+    <div class="section" id="sec-perfil">
+      <div style="max-width:560px">
+        <div class="panel" style="margin-bottom:1rem">
+          <div class="panel-head"><span class="panel-title">Mi perfil</span></div>
+          <div class="panel-body" style="display:flex;flex-direction:column;gap:1rem">
+            <div style="display:flex;align-items:center;gap:1rem;padding-bottom:1rem;border-bottom:1px solid var(--border)">
+              <div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#3e85f5,#6ba3ff);display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700;color:#fff" id="perfil-avatar">—</div>
+              <div>
+                <div style="font-size:1.05rem;font-weight:600" id="perfil-nombre-display">—</div>
+                <div style="font-size:.82rem;color:var(--text-soft)" id="perfil-email-display">—</div>
+                <span class="badge proceso" id="perfil-rol-display">ADMINISTRADOR</span>
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>Nombre</label><input type="text" id="perfil-nombre" /></div>
+              <div class="field"><label>Apellidos</label><input type="text" id="perfil-apellidos" /></div>
+            </div>
+            <div class="field"><label>Email</label><input type="email" id="perfil-email" /></div>
+            <div style="display:flex;gap:.7rem;margin-top:.3rem">
+              <button class="btn btn-primary" onclick="guardarPerfil()">Guardar cambios</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><span class="panel-title">Cambiar contraseña</span></div>
+          <div class="panel-body" style="display:flex;flex-direction:column;gap:1rem">
+            <div class="field"><label>Contraseña actual</label><input type="password" id="pwd-actual" placeholder="Tu contraseña actual" /></div>
+            <div class="field"><label>Nueva contraseña</label><input type="password" id="pwd-nueva" placeholder="Mínimo 6 caracteres" /></div>
+            <div class="field"><label>Confirmar nueva contraseña</label><input type="password" id="pwd-confirmar" placeholder="Repite la nueva contraseña" /></div>
+            <button class="btn btn-primary" onclick="cambiarPassword()">Cambiar contraseña</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </main>
 
@@ -417,6 +679,72 @@
     <div class="modal-foot">
       <button class="btn btn-secondary" onclick="cerrarModal('modal-producto')">Cancelar</button>
       <button class="btn btn-primary" onclick="guardarProducto()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALLE PEDIDO -->
+<div class="modal-overlay" id="modal-detalle-pedido" style="align-items:flex-start;padding-top:3rem">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-head">
+      <div>
+        <span class="modal-title" id="dp-titulo">Detalle del pedido</span>
+        <div style="font-size:.78rem;color:var(--text-soft);margin-top:2px" id="dp-info"></div>
+      </div>
+      <button class="modal-close" onclick="cerrarModal('modal-detalle-pedido')">×</button>
+    </div>
+    <div class="modal-body" style="gap:.8rem">
+
+      <!-- Sacos existentes -->
+      <div>
+        <div style="font-size:.78rem;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.5rem">Sacos registrados</div>
+        <table style="width:100%;border-collapse:collapse;font-size:.85rem" id="dp-tabla-sacos">
+          <thead><tr style="background:#f5f7fa">
+            <th style="text-align:left;padding:.4rem .6rem;border-bottom:1px solid var(--border)">Tipo</th>
+            <th style="text-align:right;padding:.4rem .6rem;border-bottom:1px solid var(--border)">Peso</th>
+            <th style="text-align:right;padding:.4rem .6rem;border-bottom:1px solid var(--border)">€/kg</th>
+            <th style="text-align:right;padding:.4rem .6rem;border-bottom:1px solid var(--border)">Subtotal</th>
+          </tr></thead>
+          <tbody id="dp-sacos-body"></tbody>
+          <tfoot>
+            <tr style="font-weight:700;border-top:2px solid var(--border)">
+              <td style="padding:.5rem .6rem">TOTAL</td>
+              <td style="text-align:right;padding:.5rem .6rem" id="dp-peso-total">—</td>
+              <td></td>
+              <td style="text-align:right;padding:.5rem .6rem;color:var(--brand-accent)" id="dp-importe-total">—</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- Añadir nuevo saco -->
+      <div style="border-top:1px solid var(--border);padding-top:.8rem">
+        <div style="font-size:.78rem;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.6rem">Añadir saco</div>
+        <div class="field-row">
+          <div class="field">
+            <label>Tipo de ropa *</label>
+            <select id="dp-tipo">
+              <option value="1">Blanca</option><option value="2">Color</option>
+              <option value="3">Delicada</option><option value="4">Ropa hogar</option>
+              <option value="5">Especial</option><option value="6">Toallas medianas</option>
+              <option value="7">Toallas grandes</option><option value="8">Alfombrines</option>
+              <option value="9">Paños de cara</option><option value="10">Baberos</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Peso (kg) *</label>
+            <input type="number" id="dp-peso" placeholder="0.0" step="0.1" min="0.1" />
+          </div>
+        </div>
+        <div class="field" style="margin-top:.4rem">
+          <label>Observaciones</label>
+          <input type="text" id="dp-obs" placeholder="Notas del saco..." />
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="cerrarModal('modal-detalle-pedido')">Cerrar</button>
+      <button class="btn btn-primary" onclick="guardarSacoPedido()">+ Añadir saco</button>
     </div>
   </div>
 </div>
@@ -561,6 +889,13 @@
 <div class="toast" id="toast"></div>
 
 <script>
+// Verificar sesion activa
+(function() {
+  const user = JSON.parse(sessionStorage.getItem('lav_user') || localStorage.getItem('lav_user') || 'null');
+  if (!user || !user.email) { window.location.href = 'login.html'; }
+})();
+</script>
+<script>
 const API = '/lavanderia-app/backend';
 const pages = {
   dashboard: { title: 'Panel general',  subtitle: 'Resumen del sistema' },
@@ -569,8 +904,12 @@ const pages = {
   sacos:     { title: 'Sacos',           subtitle: 'Sacos recibidos por fecha' },
   facturas:  { title: 'Facturación',    subtitle: 'Facturas generadas' },
   productos: { title: 'Productos',      subtitle: 'Control de stock' },
+  perfil:    { title: 'Mi perfil',       subtitle: 'Datos de tu cuenta' },
   usuarios:  { title: 'Usuarios',       subtitle: 'Gestión de accesos' },
 };
+
+/* ── PERFIL ── */
+let perfilUsuario = null;
 
 function navTo(section) {
   document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
@@ -579,6 +918,7 @@ function navTo(section) {
   document.getElementById(`sec-${section}`).classList.add('active');
   document.getElementById('page-title').textContent    = pages[section].title;
   document.getElementById('page-subtitle').textContent = pages[section].subtitle;
+  if (section === 'perfil')    cargarPerfil();
   if (section === 'clientes')  cargarClientes();
   if (section === 'pedidos')   cargarPedidos();
   if (section === 'productos') cargarProductos();
@@ -669,8 +1009,12 @@ async function cargarPedidos() {
       <td>#${String(p.pedido_id).padStart(4,'0')}</td>
       <td>${p.cliente}</td>
       <td>${p.fecha_entrada}</td>
+      <td>${p.num_sacos} sacos / ${p.peso_total_kg} kg</td>
       <td><span class="badge ${estadoClass[p.estado]||'pendiente'}">${p.estado}</span></td>
-      <td><button class="btn-table btn-edit" onclick="cambiarEstado(${p.pedido_id},'${p.estado}')">Avanzar estado</button></td>
+      <td style="display:flex;gap:.4rem">
+        <button class="btn-table btn-edit" onclick="cambiarEstado(${p.pedido_id},'${p.estado}')">Avanzar</button>
+        <button class="btn-table" style="background:#f3f0ff;color:#6d28d9" onclick="abrirDetallePedido(${p.pedido_id},'${p.cliente}','${p.estado}','${p.fecha_entrada}')">📦 Sacos</button>
+      </td>
     </tr>`).join('');
   const dash = document.getElementById('dash-pedidos');
   if (dash) dash.innerHTML = data.slice(0,5).map(p => `
@@ -775,26 +1119,248 @@ async function eliminarProducto(id) {
 }
 
 /* ── FACTURAS ── */
+let factSeleccionadas = new Set();
+let factEditando = null;
+let lineaCount = 0;
+
+function estadoBadge(estado) {
+  const map = {
+    'borrador':   'background:#f5f7fa;color:#6b7799;border:1px solid #e2e6ef',
+    'confirmada': 'background:#e8f0fe;color:#1d4ed8;border:1px solid #bfdbfe',
+    'pagada':     'background:#e6f9f0;color:#15803d;border:1px solid #bbf7d0',
+    'cancelada':  'background:#fff0f0;color:#ef4444;border:1px solid #fca5a5',
+  };
+  const label = { 'borrador':'Borrador','confirmada':'Confirmada','pagada':'Pagada','cancelada':'Cancelada' };
+  const s = estado || (estado=='1'?'pagada':'confirmada');
+  return `<span style="display:inline-block;font-size:.72rem;font-weight:600;padding:.22rem .65rem;border-radius:99px;${map[s]||map['confirmada']}">${label[s]||s}</span>`;
+}
+
 async function cargarFacturas() {
   const res   = await fetch(`${API}/facturas.php`);
   const data  = await res.json();
   const tbody = document.getElementById('tabla-facturas');
-  if (!data.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:1rem;color:var(--text-hint)">No hay facturas. Usa el botón para generar las del mes.</td></tr>'; return; }
-  tbody.innerHTML = data.map(f => `
-    <tr>
-      <td>${f.numero_factura}</td>
+  const filtro = document.getElementById('filtro-estado-fact')?.value || '';
+  const lista = filtro ? data.filter(f => (f.estado||'confirmada') === filtro) : data;
+
+  // Resumen
+  const total   = lista.reduce((s,f) => s + parseFloat(f.total||0), 0);
+  const cobrado = lista.filter(f=>f.pagada=='1').reduce((s,f)=>s+parseFloat(f.total||0),0);
+  const pend    = lista.filter(f=>f.pagada!='1').reduce((s,f)=>s+parseFloat(f.total||0),0);
+  document.getElementById('fr-total').textContent    = lista.length;
+  document.getElementById('fr-importe').textContent  = total.toFixed(2).replace('.',',') + ' €';
+  document.getElementById('fr-cobrado').textContent  = cobrado.toFixed(2).replace('.',',') + ' €';
+  document.getElementById('fr-pendiente').textContent = pend.toFixed(2).replace('.',',') + ' €';
+
+  if (!lista.length) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--text-hint)">No hay facturas. Usa el botón para crearlas.</td></tr>'; return; }
+
+  tbody.innerHTML = lista.map(f => {
+    const estado = f.estado || (f.pagada=='1'?'pagada':'confirmada');
+    const venc = f.fecha_emision ? new Date(new Date(f.fecha_emision).getTime() + 30*86400000).toISOString().split('T')[0] : '—';
+    return `<tr onclick="abrirDetalleFactura(${f.id})" style="cursor:pointer" onmouseover="this.style.background='#f5f7fa'" onmouseout="this.style.background=''">
+      <td onclick="event.stopPropagation()"><input type="checkbox" onchange="toggleFactura(${f.id},this)"></td>
+      <td style="color:var(--brand-accent);font-weight:600">${f.numero_factura}</td>
       <td>${f.cliente}</td>
-      <td>${f.fecha_emision}</td>
-      <td>${parseFloat(f.base_imponible).toFixed(2)}€</td>
-      <td>${parseFloat(f.iva_importe).toFixed(2)}€</td>
-      <td><strong>${parseFloat(f.total).toFixed(2)}€</strong></td>
-      <td><span class="badge ${f.pagada=='1'?'finalizado':'pendiente'}">${f.pagada=='1'?'Pagada':'Pendiente'}</span></td>
-      <td style="display:flex;gap:.4rem">
-        <button class="btn-table btn-edit" onclick='editarFactura(${JSON.stringify(f)})'>Editar</button>
-        <button class="btn-table btn-delete" onclick="eliminarFactura(${f.id})">Borrar</button>
-        ${f.pagada!='1' ? `<button class="btn-table" style="background:#e6f9f0;color:#15803d" onclick="marcarPagada(${f.id})">Cobrar</button>` : ''}
+      <td>${f.fecha_emision||'—'}</td>
+      <td style="color:${estado==='pagada'?'#15803d':estado==='cancelada'?'#ef4444':'#b45309'}">${venc}</td>
+      <td style="text-align:right">${parseFloat(f.base_imponible||0).toFixed(2).replace('.',',')} €</td>
+      <td style="text-align:right">${parseFloat(f.iva_importe||0).toFixed(2).replace('.',',')} €</td>
+      <td style="text-align:right;font-weight:700">${parseFloat(f.total||0).toFixed(2).replace('.',',')} €</td>
+      <td>${estadoBadge(estado)}</td>
+      <td onclick="event.stopPropagation()">
+        <button onclick="window.open('${API}/exportar_pdf.php?id=${f.id}','_blank')" style="background:#fff0f0;color:#ef4444;border:1px solid #fca5a5;border-radius:6px;padding:.3rem .6rem;font-size:.75rem;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap">⬇ PDF</button>
       </td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
+}
+
+function toggleAllFacturas(cb) {
+  document.querySelectorAll('#tabla-facturas input[type=checkbox]').forEach(c => { c.checked = cb.checked; toggleFactura(null,c); });
+}
+function toggleFactura(id, cb) { if(cb.checked && id) factSeleccionadas.add(id); else if(id) factSeleccionadas.delete(id); }
+
+async function abrirDetalleFactura(id) {
+  const res  = await fetch(`${API}/facturas.php?id=${id}`);
+  const fact = await res.json();
+  factEditando = fact;
+  mostrarDetalleFactura(fact);
+}
+
+function mostrarDetalleFactura(fact) {
+  document.getElementById('fact-lista').style.display   = 'none';
+  document.getElementById('fact-detalle').style.display = 'block';
+  document.getElementById('fact-guardar-area').style.display = 'none';
+
+  const estado = fact.estado || (fact.pagada=='1'?'pagada':'confirmada');
+  document.getElementById('fact-titulo').textContent = fact.numero_factura || 'Factura';
+  document.getElementById('fact-numero').value   = fact.numero_factura || '';
+  document.getElementById('fact-fecha').value    = fact.fecha_emision || '';
+  document.getElementById('fact-notas').value    = fact.notas || '';
+
+  // Estado badge
+  const badgeMap = { borrador:'pendiente', confirmada:'proceso', pagada:'finalizado', cancelada:'pendiente' };
+  const labelMap = { borrador:'BORRADOR', confirmada:'CONFIRMADA', pagada:'PAGADA', cancelada:'CANCELADA' };
+  const descMap  = {
+    borrador:   'Borrador — aún no es oficial.',
+    confirmada: 'Confirmada — pendiente de cobro.',
+    pagada:     'Pagada — cobrada el ' + (fact.fecha_pago||'—'),
+    cancelada:  'Cancelada.'
+  };
+  document.getElementById('fact-estado-badge').className = 'badge ' + (badgeMap[estado]||'proceso');
+  document.getElementById('fact-estado-badge').textContent = labelMap[estado]||estado.toUpperCase();
+  document.getElementById('fact-estado-desc').textContent  = descMap[estado]||'';
+
+  // Líneas
+  const tbody = document.getElementById('fact-lineas');
+  lineaCount = 0;
+  tbody.innerHTML = '';
+  const lineas = fact.lineas || [];
+  if (lineas.length === 0) {
+    // Sin lineas, mostrar una vacía
+    addLinea();
+  } else {
+    lineas.forEach(l => addLinea(l.descripcion, l.cantidad, l.precio_unitario));
+  }
+  calcularTotales();
+
+  // Botones de acción según estado
+  const btns = document.getElementById('fact-botones');
+  btns.innerHTML = '';
+  if (estado === 'confirmada') {
+    btns.innerHTML += `<button onclick="accionFactura('pagar',${fact.id})" style="background:#22c55e;color:#fff;padding:.5rem 1rem;border-radius:8px;border:none;cursor:pointer;font-weight:600;font-family:inherit">✓ Registrar pago</button>`;
+    btns.innerHTML += `<button onclick="accionFactura('cancelar',${fact.id})" style="background:#fff0f0;color:#ef4444;padding:.5rem 1rem;border-radius:8px;border:1px solid #fca5a5;cursor:pointer;font-weight:600;font-family:inherit">✕ Cancelar</button>`;
+  }
+  if (estado === 'pagada' || estado === 'confirmada') {
+    btns.innerHTML += `<button onclick="exportarPDFFactura(${fact.id})" style="background:#f5f7fa;color:var(--text-main);padding:.5rem 1rem;border-radius:8px;border:1px solid var(--border);cursor:pointer;font-weight:600;font-family:inherit">⬇ PDF</button>`;
+  }
+  btns.innerHTML += `<button onclick="eliminarFactura(${fact.id})" style="background:#f5f7fa;color:#ef4444;padding:.5rem 1rem;border-radius:8px;border:1px solid #fca5a5;cursor:pointer;font-weight:600;font-family:inherit">🗑 Eliminar</button>`;
+}
+
+function volverListaFacturas() {
+  factEditando = null;
+  document.getElementById('fact-lista').style.display   = 'block';
+  document.getElementById('fact-detalle').style.display = 'none';
+  cargarFacturas();
+}
+
+async function accionFactura(accion, id) {
+  const body = { accion, id, fecha_pago: new Date().toISOString().split('T')[0] };
+  const res  = await fetch(`${API}/facturas.php`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  const data = await res.json();
+  if (data.ok) { toast(accion==='pagar'?'Factura cobrada!':'Factura cancelada'); volverListaFacturas(); }
+  else toast('Error', 'error');
+}
+
+async function eliminarFactura(id) {
+  if (!confirm('¿Eliminar esta factura?')) return;
+  const res  = await fetch(`${API}/facturas.php?id=${id}`, { method:'DELETE' });
+  const data = await res.json();
+  if (data.ok) { toast('Factura eliminada'); volverListaFacturas(); }
+  else toast('Error al eliminar', 'error');
+}
+
+function exportarPDFFactura(id) {
+  window.open(`${API}/exportar_pdf.php?id=${id}`, '_blank');
+}
+
+// ── Nueva factura ──
+async function abrirNuevaFactura() {
+  factEditando = null;
+  document.getElementById('fact-lista').style.display   = 'none';
+  document.getElementById('fact-detalle').style.display = 'block';
+  document.getElementById('fact-guardar-area').style.display = 'flex';
+  document.getElementById('fact-titulo').textContent = 'Nueva factura';
+  document.getElementById('fact-numero').value   = 'Se generará automáticamente';
+  document.getElementById('fact-fecha').value    = new Date().toISOString().split('T')[0];
+  document.getElementById('fact-notas').value    = '';
+  document.getElementById('fact-botones').innerHTML = '';
+  document.getElementById('fact-estado-badge').className = 'badge pendiente';
+  document.getElementById('fact-estado-badge').textContent = 'BORRADOR';
+  document.getElementById('fact-estado-desc').textContent = 'Nueva factura en modo borrador.';
+
+  // Cargar clientes
+  const resCli = await fetch(`${API}/clientes.php`);
+  const clis   = await resCli.json();
+  document.getElementById('fact-cliente').innerHTML = '<option value="">— Selecciona un cliente —</option>' +
+    clis.map(c => `<option value="${c.id}">${c.nombre} ${c.apellidos}</option>`).join('');
+  document.getElementById('fact-pedido').innerHTML = '<option value="">— Primero selecciona un cliente —</option>';
+
+  // Líneas
+  lineaCount = 0;
+  document.getElementById('fact-lineas').innerHTML = '';
+  addLinea();
+  calcularTotales();
+}
+
+async function cargarPedidosCliente() {
+  const cid = document.getElementById('fact-cliente').value;
+  if (!cid) return;
+  const res     = await fetch(`${API}/pedidos.php`);
+  const pedidos = await res.json();
+  const activos = pedidos.filter(p => String(p.cliente_id) === String(cid));
+  document.getElementById('fact-pedido').innerHTML = '<option value="">— Selecciona un pedido —</option>' +
+    activos.map(p => `<option value="${p.pedido_id}">#${String(p.pedido_id).padStart(4,'0')} — ${p.estado} — ${p.fecha_entrada}</option>`).join('');
+}
+
+function addLinea(desc='', cant=1, precio=0) {
+  const tbody = document.getElementById('fact-lineas');
+  const id    = lineaCount++;
+  const tr    = document.createElement('tr');
+  tr.id = `linea-${id}`;
+  tr.innerHTML = `
+    <td style="border:1px solid var(--border);padding:.3rem .4rem"><input type="text" value="${desc}" placeholder="Descripción del servicio..." style="width:100%;border:none;background:transparent;font-family:inherit;font-size:.88rem;outline:none" oninput="calcularTotales()" /></td>
+    <td style="border:1px solid var(--border);padding:.3rem .4rem"><input type="number" value="${parseFloat(cant).toFixed(2)}" step="0.01" min="0" style="width:100%;border:none;background:transparent;font-family:inherit;font-size:.88rem;text-align:right;outline:none" oninput="calcularTotales()" /></td>
+    <td style="border:1px solid var(--border);padding:.3rem .4rem"><input type="number" value="${parseFloat(precio).toFixed(2)}" step="0.01" min="0" style="width:100%;border:none;background:transparent;font-family:inherit;font-size:.88rem;text-align:right;outline:none" oninput="calcularTotales()" /></td>
+    <td style="border:1px solid var(--border);padding:.3rem .6rem;text-align:right;font-weight:600" id="sub-${id}">${(cant*precio).toFixed(2).replace('.',',')} €</td>
+    <td style="border:1px solid var(--border);padding:.3rem;text-align:center"><button onclick="document.getElementById('linea-${id}').remove();calcularTotales()" style="background:none;border:none;cursor:pointer;color:#ef4444;font-size:1rem">×</button></td>`;
+  tbody.appendChild(tr);
+}
+
+function calcularTotales() {
+  let base = 0;
+  document.querySelectorAll('#fact-lineas tr').forEach(tr => {
+    const inputs = tr.querySelectorAll('input');
+    if (inputs.length >= 3) {
+      const cant  = parseFloat(inputs[1].value)||0;
+      const prec  = parseFloat(inputs[2].value)||0;
+      const sub   = cant * prec;
+      base += sub;
+      const subCell = tr.querySelector('[id^="sub-"]');
+      if (subCell) subCell.textContent = sub.toFixed(2).replace('.',',') + ' €';
+    }
+  });
+  const iva  = base * 0.21;
+  const tot  = base + iva;
+  document.getElementById('fact-base-total').textContent = base.toFixed(2).replace('.',',') + ' €';
+  document.getElementById('fact-iva-total').textContent  = iva.toFixed(2).replace('.',',') + ' €';
+  document.getElementById('fact-total-total').textContent = tot.toFixed(2).replace('.',',') + ' €';
+}
+
+async function guardarFacturaNueva() {
+  const pedido_id = document.getElementById('fact-pedido').value;
+  if (!pedido_id) { toast('Selecciona un pedido', 'error'); return; }
+
+  const lineas = [];
+  document.querySelectorAll('#fact-lineas tr').forEach(tr => {
+    const inputs = tr.querySelectorAll('input');
+    if (inputs.length >= 3) {
+      const desc  = inputs[0].value.trim();
+      const cant  = parseFloat(inputs[1].value)||0;
+      const prec  = parseFloat(inputs[2].value)||0;
+      if (desc && prec > 0) lineas.push({ descripcion: desc, cantidad: cant, precio_unitario: prec });
+    }
+  });
+
+  const body = {
+    pedido_id:    parseInt(pedido_id),
+    fecha_emision: document.getElementById('fact-fecha').value,
+    notas:        document.getElementById('fact-notas').value,
+    lineas,
+  };
+
+  const res  = await fetch(`${API}/facturas.php`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  const data = await res.json();
+  if (data.ok) { toast('Factura ' + data.numero + ' creada'); volverListaFacturas(); }
+  else toast(data.error || 'Error al crear', 'error');
 }
 
 async function generarFacturasMes() {
@@ -802,65 +1368,14 @@ async function generarFacturasMes() {
   if (!mes) { toast('Selecciona un mes primero', 'error'); return; }
   const res  = await fetch(`${API}/facturas.php?generar_mes=${mes}`);
   const data = await res.json();
-  if (data.ok) {
-    toast(`${data.generadas} factura(s) generada(s) para ${mes}`);
-    cargarFacturas();
-  } else toast(data.error || 'Error al generar', 'error');
+  if (data.ok) { toast(data.generadas + ' factura(s) generada(s) para ' + mes); cargarFacturas(); }
+  else toast(data.error || 'Error al generar', 'error');
 }
 
-async function abrirModalFactura() {
-  const res     = await fetch(`${API}/pedidos.php`);
-  const pedidos = await res.json();
-  document.getElementById('factura-pedido').innerHTML =
-    '<option value="">— Selecciona un pedido —</option>' +
-    pedidos.map(p => `<option value="${p.pedido_id}">#${String(p.pedido_id).padStart(4,'0')} — ${p.cliente} (${p.estado})</option>`).join('');
-  document.getElementById('factura-manual-fecha').value = new Date().toISOString().split('T')[0];
-  abrirModal('modal-factura');
-}
-
-function editarFactura(f) {
-  document.getElementById('factura-id').value    = f.id;
-  document.getElementById('factura-base').value  = parseFloat(f.base_imponible).toFixed(2);
-  document.getElementById('factura-pagada').value = f.pagada;
-  document.getElementById('factura-fecha-pago').value = f.fecha_pago || '';
-  abrirModal('modal-factura-editar');
-}
-
-async function guardarFacturaEditar() {
-  const id     = document.getElementById('factura-id').value;
-  const base   = parseFloat(document.getElementById('factura-base').value) || 0;
-  const pagada = parseInt(document.getElementById('factura-pagada').value);
-  const fp     = document.getElementById('factura-fecha-pago').value;
-  const res    = await fetch(`${API}/facturas.php`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id, base_imponible: base, pagada, fecha_pago: fp }) });
-  const data   = await res.json();
-  if (data.ok) { toast('Factura actualizada'); cerrarModal('modal-factura-editar'); cargarFacturas(); }
-  else toast(data.error || 'Error al actualizar', 'error');
-}
-
-async function marcarPagada(id) {
-  const res  = await fetch(`${API}/facturas.php`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id, pagada: 1, fecha_pago: new Date().toISOString().split('T')[0] }) });
-  const data = await res.json();
-  if (data.ok) { toast('Factura marcada como pagada'); cargarFacturas(); }
-  else toast('Error', 'error');
-}
-
-async function eliminarFactura(id) {
-  if (!confirm('¿Eliminar esta factura?')) return;
-  const res  = await fetch(`${API}/facturas.php?id=${id}`, { method: 'DELETE' });
-  const data = await res.json();
-  if (data.ok) { toast('Factura eliminada'); cargarFacturas(); }
-  else toast('Error al eliminar', 'error');
-}
-
-async function guardarFacturaManual() {
-  const pedido_id = document.getElementById('factura-pedido').value;
-  const base      = parseFloat(document.getElementById('factura-manual-base').value) || 0;
-  const fecha     = document.getElementById('factura-manual-fecha').value;
-  if (!pedido_id) { toast('Selecciona un pedido', 'error'); return; }
-  const res  = await fetch(`${API}/facturas.php`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ pedido_id: parseInt(pedido_id), base_imponible: base, fecha_emision: fecha }) });
-  const data = await res.json();
-  if (data.ok) { toast(`Factura ${data.numero} creada`); cerrarModal('modal-factura'); cargarFacturas(); }
-  else toast(data.error || 'Error al crear factura', 'error');
+function exportarExcel() {
+  const mes = document.getElementById('mes-facturacion').value;
+  if (!mes) { toast('Selecciona un mes primero', 'error'); return; }
+  window.location.href = `${API}/exportar_facturas.php?mes=${mes}`;
 }
 
 /* ── USUARIOS ── */
@@ -879,6 +1394,7 @@ async function cargarUsuarios() {
       <td style="display:flex;gap:.4rem">
         <button class="btn-table btn-edit" onclick='editarUsuario(${JSON.stringify(u)})'>Editar</button>
         <button class="btn-table btn-delete" onclick="desactivarUsuario(${u.id})">Desactivar</button>
+        <button class="btn-table" style="background:#fff0f0;color:#ef4444;border:1px solid #fca5a5" onclick="eliminarUsuario(${u.id})">Eliminar</button>
       </td>
     </tr>`).join('');
 }
@@ -935,6 +1451,14 @@ async function desactivarUsuario(id) {
   else toast('Error', 'error');
 }
 
+async function eliminarUsuario(id) {
+  if (!confirm('¿Eliminar este usuario permanentemente? Esta acción no se puede deshacer.')) return;
+  const res  = await fetch(`${API}/usuarios.php?id=${id}&forzar=1`, { method: 'DELETE' });
+  const data = await res.json();
+  if (data.ok) { toast('Usuario eliminado'); cargarUsuarios(); }
+  else toast(data.error || 'Error al eliminar', 'error');
+}
+
 /* ── SACOS ADMIN ── */
 async function cargarSacosAdmin() {
   const fechaInput = document.getElementById('fecha-sacos-admin');
@@ -978,6 +1502,162 @@ async function cargarSacosAdmin() {
   document.getElementById('admin-total-sacos').textContent   = totalSacos;
   document.getElementById('admin-total-peso').textContent    = totalPeso.toFixed(1) + ' kg';
   document.getElementById('admin-total-importe').textContent = totalImporte.toFixed(2) + '€';
+}
+
+/* ── FILTROS Y BUSQUEDA ── */
+let todosClientes = [];
+let todosPedidos  = [];
+
+// Override cargarClientes to store data
+const _cargarClientesOrig = cargarClientes;
+
+async function cargarClientes() {
+  const res  = await fetch(`${API}/clientes.php`);
+  const data = await res.json();
+  todosClientes = data;
+  document.getElementById('stat-clientes').textContent = data.length || 0;
+  renderClientes(data);
+}
+
+function renderClientes(data) {
+  const tbody = document.getElementById('tabla-clientes');
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:1rem;color:var(--text-hint)">No se encontraron clientes</td></tr>'; return; }
+  tbody.innerHTML = data.map(c => `
+    <tr>
+      <td>${c.nombre} ${c.apellidos}</td>
+      <td>${c.telefono || '—'}</td>
+      <td>${c.email || '—'}</td>
+      <td style="display:flex;gap:.4rem">
+        <button class="btn-table btn-edit" onclick='editarCliente(${JSON.stringify(c)})'>Editar</button>
+        <button class="btn-table btn-delete" onclick="eliminarCliente(${c.id})">Eliminar</button>
+      </td>
+    </tr>`).join('');
+}
+
+function filtrarClientes() {
+  const q = document.getElementById('buscar-cliente').value.toLowerCase().trim();
+  if (!q) { renderClientes(todosClientes); return; }
+  const filtrados = todosClientes.filter(c =>
+    (c.nombre + ' ' + c.apellidos).toLowerCase().includes(q) ||
+    (c.email||'').toLowerCase().includes(q) ||
+    (c.telefono||'').includes(q)
+  );
+  renderClientes(filtrados);
+}
+
+// Override cargarPedidos to store data
+async function cargarPedidos() {
+  const res  = await fetch(`${API}/pedidos.php`);
+  const data = await res.json();
+  todosPedidos = data;
+  document.getElementById('stat-pedidos').textContent = data.filter(p => p.estado !== 'ENTREGADO').length;
+  filtrarPedidos();
+  const dash = document.getElementById('dash-pedidos');
+  if (dash) dash.innerHTML = data.slice(0,5).map(p => `
+    <tr>
+      <td>#${String(p.pedido_id).padStart(4,'0')}</td>
+      <td>${p.cliente}</td>
+      <td><span class="badge ${estadoClass[p.estado]||'pendiente'}">${p.estado}</span></td>
+      <td>${p.peso_total_kg} kg</td>
+    </tr>`).join('');
+}
+
+function filtrarPedidos() {
+  const q      = (document.getElementById('buscar-pedido')?.value || '').toLowerCase().trim();
+  const estado = document.getElementById('filtro-estado-pedido')?.value || '';
+  const fecha  = document.getElementById('filtro-fecha-pedido')?.value || '';
+
+  let filtrados = todosPedidos;
+  if (q)      filtrados = filtrados.filter(p => p.cliente.toLowerCase().includes(q) || String(p.pedido_id).includes(q));
+  if (estado) filtrados = filtrados.filter(p => p.estado === estado);
+  if (fecha)  filtrados = filtrados.filter(p => p.fecha_entrada === fecha);
+
+  renderPedidos(filtrados);
+}
+
+function limpiarFiltrosPedidos() {
+  const b = document.getElementById('buscar-pedido');
+  const e = document.getElementById('filtro-estado-pedido');
+  const f = document.getElementById('filtro-fecha-pedido');
+  if (b) b.value = '';
+  if (e) e.value = '';
+  if (f) f.value = '';
+  filtrarPedidos();
+}
+
+function renderPedidos(data) {
+  const tbody = document.getElementById('tabla-pedidos');
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:1rem;color:var(--text-hint)">No se encontraron pedidos</td></tr>'; return; }
+  tbody.innerHTML = data.map(p => `
+    <tr>
+      <td>#${String(p.pedido_id).padStart(4,'0')}</td>
+      <td>${p.cliente}</td>
+      <td>${p.fecha_entrada}</td>
+      <td>${p.num_sacos} sacos / ${p.peso_total_kg} kg</td>
+      <td><span class="badge ${estadoClass[p.estado]||'pendiente'}">${p.estado}</span></td>
+      <td style="display:flex;gap:.4rem">
+        <button class="btn-table btn-edit" onclick="cambiarEstado(${p.pedido_id},'${p.estado}')">Avanzar</button>
+        <button class="btn-table" style="background:#f3f0ff;color:#6d28d9" onclick="abrirDetallePedido(${p.pedido_id},'${p.cliente}','${p.estado}','${p.fecha_entrada}')">📦 Sacos</button>
+      </td>
+    </tr>`).join('');
+}
+
+/* ── DETALLE PEDIDO CON SACOS ── */
+let pedidoActual = null;
+
+async function abrirDetallePedido(id, cliente, estado, fecha) {
+  pedidoActual = id;
+  document.getElementById('dp-titulo').textContent = `Pedido #${String(id).padStart(4,'0')}`;
+  document.getElementById('dp-info').textContent   = `${cliente} · ${estado} · ${fecha}`;
+  document.getElementById('dp-peso').value = '';
+  document.getElementById('dp-obs').value  = '';
+  await cargarSacosPedido(id);
+  abrirModal('modal-detalle-pedido');
+}
+
+async function cargarSacosPedido(id) {
+  const res   = await fetch(`${API}/sacos.php?pedido_id=${id}`);
+  const sacos = await res.json();
+  const tbody = document.getElementById('dp-sacos-body');
+  const tipos = {1:'Blanca',2:'Color',3:'Delicada',4:'Ropa hogar',5:'Especial',6:'Toallas medianas',7:'Toallas grandes',8:'Alfombrines',9:'Paños de cara',10:'Baberos'};
+
+  if (!sacos.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:1rem;color:var(--text-hint)">Sin sacos registrados</td></tr>';
+    document.getElementById('dp-peso-total').textContent    = '0 kg';
+    document.getElementById('dp-importe-total').textContent = '0,00 €';
+    return;
+  }
+
+  tbody.innerHTML = sacos.map(s => `
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:.45rem .6rem">${tipos[s.tipo_ropa_id]||s.tipo_ropa}</td>
+      <td style="text-align:right;padding:.45rem .6rem">${parseFloat(s.peso_kg).toFixed(1)} kg</td>
+      <td style="text-align:right;padding:.45rem .6rem">${parseFloat(s.precio_kg).toFixed(2)} €</td>
+      <td style="text-align:right;padding:.45rem .6rem;font-weight:600">${parseFloat(s.subtotal).toFixed(2)} €</td>
+    </tr>`).join('');
+
+  const pesoTotal    = sacos.reduce((s,x)=>s+parseFloat(x.peso_kg),0);
+  const importeTotal = sacos.reduce((s,x)=>s+parseFloat(x.subtotal),0);
+  document.getElementById('dp-peso-total').textContent    = pesoTotal.toFixed(1) + ' kg';
+  document.getElementById('dp-importe-total').textContent = importeTotal.toFixed(2).replace('.',',') + ' €';
+}
+
+async function guardarSacoPedido() {
+  const tipo_ropa_id = document.getElementById('dp-tipo').value;
+  const peso_kg      = document.getElementById('dp-peso').value;
+  if (!peso_kg || peso_kg <= 0) { toast('Introduce el peso del saco', 'error'); return; }
+
+  const res  = await fetch(`${API}/sacos.php`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ pedido_id: pedidoActual, tipo_ropa_id: parseInt(tipo_ropa_id), peso_kg: parseFloat(peso_kg) })
+  });
+  const data = await res.json();
+  if (data.ok) {
+    toast('Saco añadido correctamente');
+    document.getElementById('dp-peso').value = '';
+    await cargarSacosPedido(pedidoActual);
+    cargarPedidos();
+  } else toast(data.error || 'Error al añadir saco', 'error');
 }
 
 /* ── SACO ADMIN ── */
@@ -1028,17 +1708,355 @@ async function guardarSacoAdmin() {
   } else toast(dataSaco.error || 'Error al registrar saco', 'error');
 }
 
+let chartEstados = null;
+let chartTipos   = null;
+
+async function cargarDashboard() {
+  const [resPed, resCli, resProd, resFac, resUsu] = await Promise.all([
+    fetch(`${API}/pedidos.php`),
+    fetch(`${API}/clientes.php`),
+    fetch(`${API}/productos.php`),
+    fetch(`${API}/facturas.php`),
+    fetch(`${API}/usuarios.php`),
+  ]);
+  const pedidos   = await resPed.json();
+  const clientes  = await resCli.json();
+  const productos = await resProd.json();
+  const facturas  = await resFac.json();
+  const usuarios  = await resUsu.json();
+
+  // Tarjetas
+  document.getElementById('stat-clientes').textContent = clientes.length;
+  document.getElementById('stat-pedidos').textContent  = pedidos.filter(p => p.estado !== 'ENTREGADO').length;
+  const bajos = productos.filter(p => parseInt(p.stock_actual) < parseInt(p.stock_minimo));
+  document.getElementById('stat-stock').textContent       = bajos.length;
+  document.getElementById('stat-stock-delta').textContent = bajos.length > 0 ? 'Requiere atención' : 'Stock OK';
+  const mesActual = new Date().toISOString().slice(0,7);
+  document.getElementById('stat-facturas').textContent = Array.isArray(facturas) ? facturas.filter(f => f.fecha_emision && f.fecha_emision.startsWith(mesActual)).length : 0;
+  document.getElementById('stat-usuarios').textContent = Array.isArray(usuarios) ? usuarios.filter(u => u.activo == 1).length : 0;
+
+  // Alertas inteligentes
+  generarAlertasIA(pedidos, productos, facturas, clientes);
+
+  // Últimos pedidos tabla
+  const dash = document.getElementById('dash-pedidos');
+  if (dash) dash.innerHTML = pedidos.slice(0,5).map(p => `
+    <tr>
+      <td>#${String(p.pedido_id).padStart(4,'0')}</td>
+      <td>${p.cliente}</td>
+      <td><span class="badge ${estadoClass[p.estado]||'pendiente'}">${p.estado}</span></td>
+      <td>${p.peso_total_kg} kg</td>
+    </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;padding:1rem;color:var(--text-hint)">No hay pedidos</td></tr>';
+
+  // Gráfica barras: pedidos por estado
+  const estadosCounts = {
+    'PENDIENTE':  pedidos.filter(p => p.estado === 'PENDIENTE').length,
+    'EN PROCESO': pedidos.filter(p => p.estado === 'EN_PROCESO').length,
+    'FINALIZADO': pedidos.filter(p => p.estado === 'FINALIZADO').length,
+    'ENTREGADO':  pedidos.filter(p => p.estado === 'ENTREGADO').length,
+  };
+  const ctxBar = document.getElementById('chart-estados');
+  if (ctxBar) {
+    if (chartEstados) chartEstados.destroy();
+    chartEstados = new Chart(ctxBar, {
+      type: 'bar',
+      data: {
+        labels: Object.keys(estadosCounts),
+        datasets: [{
+          label: 'Pedidos',
+          data: Object.values(estadosCounts),
+          backgroundColor: ['#fbbf24','#3e85f5','#22c55e','#8b5cf6'],
+          borderRadius: 8,
+          borderSkipped: false,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#e2e6ef' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  // Gráfica tarta: sacos del día de hoy por tipo de ropa
+  const tiposNombres = { 1:'Blanca', 2:'Color', 3:'Delicada', 4:'Ropa hogar', 5:'Especial', 6:'Toallas med.', 7:'Toallas gr.', 8:'Alfombrines', 9:'Paños cara', 10:'Baberos' };
+  const hoyFecha = new Date().toISOString().split('T')[0];
+  let sacos = [], sacosDia = [];
+  try {
+    const resSacos = await fetch(`${API}/sacos.php`);
+    sacos    = await resSacos.json();
+    sacosDia = Array.isArray(sacos) ? sacos.filter(s => s.fecha_entrada === hoyFecha) : [];
+  } catch(e) { sacos = []; sacosDia = []; }
+  const tipoCount = {};
+  sacosDia.forEach(s => {
+    const nombre = tiposNombres[s.tipo_ropa_id] || s.tipo_ropa;
+    tipoCount[nombre] = (tipoCount[nombre] || 0) + 1;
+  });
+  const ctxPie = document.getElementById('chart-tipos');
+  if (ctxPie && Object.keys(tipoCount).length) {
+    if (chartTipos) chartTipos.destroy();
+    chartTipos = new Chart(ctxPie, {
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(tipoCount),
+        datasets: [{
+          data: Object.values(tipoCount),
+          backgroundColor: ['#3e85f5','#f59e0b','#22c55e','#ef4444','#8b5cf6','#06b6d4','#ec4899','#84cc16','#f97316','#6366f1'],
+          borderWidth: 2,
+          borderColor: '#fff'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 12, padding: 8 } }
+        },
+        cutout: '60%'
+      }
+    });
+  } else if (ctxPie) {
+    ctxPie.parentElement.innerHTML = '<p style="text-align:center;color:var(--text-hint);padding:2rem">Sin sacos registrados</p>';
+  }
+}
+
+function exportarExcel() {
+  const mes = document.getElementById('mes-facturacion').value;
+  if (!mes) { toast('Selecciona un mes primero', 'error'); return; }
+  window.location.href = `${API}/exportar_facturas.php?mes=${mes}`;
+}
+
+/* ── ALERTAS IA ── */
+function generarAlertasIA(pedidos, productos, facturas, clientes) {
+  const contenedor = document.getElementById('alertas-ia');
+  if (!contenedor) return;
+  contenedor.innerHTML = '';
+
+  const alertas = [];
+  const mes     = new Date().toISOString().slice(0,7);
+  const mesAnt  = new Date(new Date().setMonth(new Date().getMonth()-1)).toISOString().slice(0,7);
+
+  // Facturacion este mes vs anterior
+  const factMes    = facturas.filter(f => (f.fecha_emision||'').startsWith(mes));
+  const factMesAnt = facturas.filter(f => (f.fecha_emision||'').startsWith(mesAnt));
+  const totalMes   = factMes.reduce((s,f)=>s+parseFloat(f.total||0),0);
+  const totalAnt   = factMesAnt.reduce((s,f)=>s+parseFloat(f.total||0),0);
+
+  if (totalAnt > 0 && totalMes < totalAnt) {
+    const caida = Math.round(((totalAnt-totalMes)/totalAnt)*100);
+    if (caida > 10) alertas.push({ tipo:'danger', emoji:'📉', texto:`La facturación de este mes es un ${caida}% menor que el mes anterior. Revisa la captación de clientes.` });
+  }
+  if (totalAnt > 0 && totalMes > totalAnt) {
+    const subida = Math.round(((totalMes-totalAnt)/totalAnt)*100);
+    if (subida > 10) alertas.push({ tipo:'success', emoji:'📈', texto:`Excelente! La facturación ha crecido un ${subida}% respecto al mes anterior.` });
+  }
+
+  // Stock critico
+  const sinStock = productos.filter(p => parseInt(p.stock_actual)===0);
+  const bajMin   = productos.filter(p => parseInt(p.stock_actual)<parseInt(p.stock_minimo) && parseInt(p.stock_actual)>0);
+  if (sinStock.length > 0) alertas.push({ tipo:'danger', emoji:'🔴', texto:`Sin stock: ${sinStock.map(p=>p.nombre).join(', ')}. Reponer urgentemente.` });
+  if (bajMin.length > 0)   alertas.push({ tipo:'warning', emoji:'📦', texto:`Stock bajo en ${bajMin.length} producto(s): ${bajMin.map(p=>p.nombre).join(', ')}.` });
+
+  // Facturas sin cobrar antiguas
+  const hoy = new Date();
+  const viejas = facturas.filter(f => f.pagada!='1' && f.fecha_emision && ((hoy-new Date(f.fecha_emision))/86400000)>30);
+  if (viejas.length > 0) alertas.push({ tipo:'warning', emoji:'💰', texto:`${viejas.length} factura(s) llevan más de 30 días sin cobrar. Total pendiente: ${viejas.reduce((s,f)=>s+parseFloat(f.total||0),0).toFixed(2).replace('.',',')} €.` });
+
+  // Pedidos pendientes acumulados
+  const pend = pedidos.filter(p=>p.estado==='PENDIENTE');
+  if (pend.length > 4) alertas.push({ tipo:'warning', emoji:'⏳', texto:`Hay ${pend.length} pedidos pendientes acumulados. Procésalos para evitar retrasos.` });
+
+  // Sin pedidos hoy
+  const hoyStr = new Date().toISOString().split('T')[0];
+  const pedHoy = pedidos.filter(p=>p.fecha_entrada===hoyStr);
+  if (pedHoy.length === 0 && new Date().getDay() >= 1 && new Date().getDay() <= 5) {
+    alertas.push({ tipo:'info', emoji:'📋', texto:`Sin pedidos registrados hoy. Buen momento para revisar stock y cobrar facturas pendientes.` });
+  }
+
+  // Sin clientes nuevos este mes
+  if (clientes.length < 3) alertas.push({ tipo:'info', emoji:'👥', texto:`Tienes pocos clientes registrados (${clientes.length}). Considera captar nuevos clientes.` });
+
+  // Mostrar alertas
+  if (alertas.length === 0) {
+    contenedor.innerHTML = `<div style="background:#e6f9f0;border:1px solid #bbf7d0;border-radius:10px;padding:.7rem 1rem;font-size:.85rem;color:#15803d;display:flex;align-items:center;gap:.6rem">✅ <strong>Todo en orden.</strong> No hay alertas urgentes hoy.</div>`;
+    return;
+  }
+
+  const colores = {
+    danger:  { bg:'#fff0f0', border:'#fca5a5', color:'#991b1b' },
+    warning: { bg:'#fff8e6', border:'#fde68a', color:'#b45309' },
+    success: { bg:'#e6f9f0', border:'#bbf7d0', color:'#15803d' },
+    info:    { bg:'#e8f0fe', border:'#bfdbfe', color:'#1d4ed8' },
+  };
+
+  alertas.forEach(a => {
+    const c = colores[a.tipo] || colores.info;
+    contenedor.innerHTML += `<div style="background:${c.bg};border:1px solid ${c.border};border-radius:10px;padding:.7rem 1rem;font-size:.85rem;color:${c.color};display:flex;align-items:center;gap:.6rem">
+      <span style="font-size:1rem">${a.emoji}</span>
+      <span>${a.texto}</span>
+    </div>`;
+  });
+}
+
+
+async function cargarPerfil() {
+  const stored = JSON.parse(sessionStorage.getItem('lav_user') || localStorage.getItem('lav_user') || 'null');
+  if (!stored || !stored.email) { toast('No se pudo cargar el perfil', 'error'); return; }
+  const res    = await fetch(`${API}/usuarios.php`);
+  const users  = await res.json();
+  const user   = users.find(u => u.email === stored.email);
+  if (!user) { toast('Usuario no encontrado', 'error'); return; }
+  perfilUsuario = user;
+
+  document.getElementById('perfil-nombre').value    = user.nombre || '';
+  document.getElementById('perfil-apellidos').value = user.apellidos || '';
+  document.getElementById('perfil-email').value     = user.email || '';
+  document.getElementById('perfil-nombre-display').textContent = user.nombre + ' ' + user.apellidos;
+  document.getElementById('perfil-email-display').textContent  = user.email;
+  document.getElementById('perfil-avatar').textContent = (user.nombre||'?')[0].toUpperCase();
+}
+
+async function guardarPerfil() {
+  if (!perfilUsuario) return;
+  const nombre    = document.getElementById('perfil-nombre').value.trim();
+  const apellidos = document.getElementById('perfil-apellidos').value.trim();
+  const email     = document.getElementById('perfil-email').value.trim();
+  if (!nombre || !email) { toast('Nombre y email son obligatorios', 'error'); return; }
+
+  const res  = await fetch(`${API}/usuarios.php`, {
+    method: 'PUT', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ id: perfilUsuario.id, nombre, apellidos, email, rol_id: perfilUsuario.rol_id, activo: perfilUsuario.activo })
+  });
+  const data = await res.json();
+  if (data.ok) {
+    toast('Perfil actualizado correctamente');
+    document.getElementById('perfil-nombre-display').textContent = nombre + ' ' + apellidos;
+    document.getElementById('perfil-email-display').textContent  = email;
+    document.getElementById('perfil-avatar').textContent = nombre[0].toUpperCase();
+  } else toast(data.error || 'Error al guardar', 'error');
+}
+
+async function cambiarPassword() {
+  if (!perfilUsuario) return;
+  const actual    = document.getElementById('pwd-actual').value;
+  const nueva     = document.getElementById('pwd-nueva').value;
+  const confirmar = document.getElementById('pwd-confirmar').value;
+
+  if (!actual || !nueva) { toast('Rellena todos los campos', 'error'); return; }
+  if (nueva.length < 6)  { toast('La contraseña debe tener al menos 6 caracteres', 'error'); return; }
+  if (nueva !== confirmar) { toast('Las contraseñas no coinciden', 'error'); return; }
+
+  const res  = await fetch(`${API}/usuarios.php`, {
+    method: 'PUT', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ id: perfilUsuario.id, nombre: perfilUsuario.nombre, apellidos: perfilUsuario.apellidos, email: perfilUsuario.email, rol_id: perfilUsuario.rol_id, activo: perfilUsuario.activo, password: nueva })
+  });
+  const data = await res.json();
+  if (data.ok) {
+    toast('Contraseña cambiada correctamente');
+    document.getElementById('pwd-actual').value    = '';
+    document.getElementById('pwd-nueva').value     = '';
+    document.getElementById('pwd-confirmar').value = '';
+  } else toast(data.error || 'Error al cambiar contraseña', 'error');
+}
+
 window.addEventListener('load', () => {
-  cargarClientes();
-  cargarPedidos();
-  cargarProductos();
+  cargarDashboard();
   document.getElementById('fecha-sacos-admin').value = new Date().toISOString().split('T')[0];
-  // Poner mes actual por defecto en el selector de facturación
   const hoy = new Date();
   const mes = hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0');
   const inputMes = document.getElementById('mes-facturacion');
   if (inputMes) inputMes.value = mes;
 });
+</script>
+<!-- BOTÓN FLOTANTE IA -->
+<button onclick="toggleChat()" style="position:fixed;bottom:1.5rem;right:1.5rem;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#3e85f5,#6ba3ff);border:none;cursor:pointer;box-shadow:0 4px 20px rgba(62,133,245,.45);display:flex;align-items:center;justify-content:center;z-index:500;transition:transform .2s" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+</button>
+
+<!-- CHAT IA -->
+<div id="chat-panel" style="display:none;position:fixed;bottom:5rem;right:1.5rem;width:340px;height:480px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.18);z-index:500;display:none;flex-direction:column;overflow:hidden">
+  <div style="background:linear-gradient(135deg,#1a2744,#253460);padding:1rem 1.2rem;display:flex;align-items:center;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:.7rem">
+      <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#3e85f5,#6ba3ff);display:flex;align-items:center;justify-content:center">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+      </div>
+      <div>
+        <div style="color:#fff;font-size:.9rem;font-weight:600">Asistente LavanderApp</div>
+        <div style="color:rgba(255,255,255,.5);font-size:.72rem">Powered by Claude</div>
+      </div>
+    </div>
+    <button onclick="toggleChat()" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.5);font-size:1.2rem;line-height:1">×</button>
+  </div>
+
+  <div id="chat-messages" style="flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.8rem;background:#f5f7fa">
+    <div style="background:#fff;border-radius:12px 12px 12px 2px;padding:.7rem .9rem;font-size:.85rem;color:#1a2744;box-shadow:0 1px 4px rgba(0,0,0,.06);max-width:90%">
+      ¡Hola! Soy el asistente de LavanderApp. Puedo ayudarte con información sobre pedidos, clientes, stock y más. ¿En qué te puedo ayudar?
+    </div>
+  </div>
+
+  <div style="padding:.8rem;border-top:1px solid #e2e6ef;display:flex;gap:.5rem;background:#fff">
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..." style="flex:1;padding:.6rem .9rem;border:1.5px solid #e2e6ef;border-radius:8px;font-family:inherit;font-size:.85rem;outline:none" onkeydown="if(event.key==='Enter') enviarMensaje()" />
+    <button onclick="enviarMensaje()" style="background:linear-gradient(135deg,#3e85f5,#6ba3ff);border:none;border-radius:8px;padding:.6rem .9rem;cursor:pointer;color:#fff;font-size:.85rem;font-weight:600">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+const chatHistorial = [];
+
+function toggleChat() {
+  const panel = document.getElementById('chat-panel');
+  panel.style.display = panel.style.display === 'none' || panel.style.display === '' ? 'flex' : 'none';
+  if (panel.style.display === 'flex') document.getElementById('chat-input').focus();
+}
+
+function addMessage(text, isUser) {
+  const messages = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.style.cssText = isUser
+    ? 'background:linear-gradient(135deg,#3e85f5,#6ba3ff);border-radius:12px 12px 2px 12px;padding:.7rem .9rem;font-size:.85rem;color:#fff;box-shadow:0 1px 4px rgba(0,0,0,.1);max-width:90%;align-self:flex-end;white-space:pre-wrap'
+    : 'background:#fff;border-radius:12px 12px 12px 2px;padding:.7rem .9rem;font-size:.85rem;color:#1a2744;box-shadow:0 1px 4px rgba(0,0,0,.06);max-width:90%;white-space:pre-wrap';
+  div.textContent = text;
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+  return div;
+}
+
+async function enviarMensaje() {
+  const input = document.getElementById('chat-input');
+  const texto = input.value.trim();
+  if (!texto) return;
+  input.value = '';
+
+  addMessage(texto, true);
+  const loadingDiv = addMessage('Pensando...', false);
+  loadingDiv.style.color = '#9aa3be';
+  loadingDiv.style.fontStyle = 'italic';
+
+  try {
+    // Obtener datos reales de la BD para dar contexto a la IA
+    const response = await fetch(`${API}/asistente.php`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pregunta: texto, historial: chatHistorial })
+    });
+    const data = await response.json();
+    const respuesta = data.respuesta || data.error || 'No pude obtener respuesta.';
+    chatHistorial.push({ role: 'user', content: texto });
+    chatHistorial.push({ role: 'assistant', content: respuesta });
+    if (chatHistorial.length > 20) chatHistorial.splice(0, 2);
+    loadingDiv.textContent = respuesta;
+    loadingDiv.style.color = '#1a2744';
+    loadingDiv.style.fontStyle = 'normal';
+
+  } catch (err) {
+    loadingDiv.textContent = 'Error al conectar con el asistente. Inténtalo de nuevo.';
+    loadingDiv.style.color = '#ef4444';
+  }
+}
 </script>
 </body>
 </html>

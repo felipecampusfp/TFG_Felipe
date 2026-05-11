@@ -1,7 +1,9 @@
 <?php
 error_reporting(0);
 ini_set('display_errors', 0);
+ob_start();
 require_once 'config.php';
+ob_clean();
 
 $method = $_SERVER['REQUEST_METHOD'];
 
@@ -91,9 +93,16 @@ switch ($method) {
         break;
 
     case 'DELETE':
-        $id = intval($_GET['id'] ?? 0);
-        // Baja logica para no perder historial
-        $stmt = $conn->prepare("UPDATE usuarios SET activo = 0 WHERE id = ?");
+        $id     = intval($_GET['id']     ?? 0);
+        $forzar = intval($_GET['forzar'] ?? 0);
+
+        if ($forzar) {
+            // Borrado permanente
+            $stmt = $conn->prepare("DELETE FROM usuarios WHERE id = ?");
+        } else {
+            // Baja logica
+            $stmt = $conn->prepare("UPDATE usuarios SET activo = 0 WHERE id = ?");
+        }
         $stmt->bind_param("i", $id);
         if ($stmt->execute()) {
             echo json_encode(["ok" => true]);
