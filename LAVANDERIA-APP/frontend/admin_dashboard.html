@@ -374,8 +374,7 @@
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.6rem">
           <div style="display:flex;gap:.5rem;flex-wrap:wrap">
             <button onclick="abrirNuevaFactura()" style="background:var(--brand-accent);color:#fff;padding:.55rem 1.1rem;border-radius:8px;border:none;cursor:pointer;font-weight:600;font-family:inherit;font-size:.88rem">+ Nueva factura</button>
-            <button onclick="generarFacturasMes()" style="background:#f5f7fa;color:var(--text-main);padding:.55rem 1.1rem;border-radius:8px;border:1px solid var(--border);cursor:pointer;font-weight:600;font-family:inherit;font-size:.88rem">🔄 Generar del mes</button>
-            <button onclick="exportarExcel()" style="background:#f5f7fa;color:#15803d;padding:.55rem 1.1rem;border-radius:8px;border:1px solid #bbf7d0;cursor:pointer;font-weight:600;font-family:inherit;font-size:.88rem">⬇ Exportar Excel</button>
+            <button onclick="exportarExcelMes()" style="background:#f5f7fa;color:#15803d;padding:.55rem 1.1rem;border-radius:8px;border:1px solid #bbf7d0;cursor:pointer;font-weight:600;font-family:inherit;font-size:.88rem">⬇ Excel del mes</button>
           </div>
           <div style="display:flex;gap:.5rem;align-items:center">
             <input type="month" id="mes-facturacion" style="padding:.4rem .7rem;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.85rem;outline:none" />
@@ -456,13 +455,13 @@
             <div style="display:flex;flex-direction:column;gap:1rem">
               <div class="field">
                 <label>Cliente *</label>
-                <select id="fact-cliente" onchange="cargarPedidosCliente()">
+                <select id="fact-cliente" onchange="cargarPedidosFactura()">
                   <option value="">— Selecciona un cliente —</option>
                 </select>
               </div>
-              <div class="field">
-                <label>Pedido asociado</label>
-                <select id="fact-pedido"><option value="">— Selecciona un pedido —</option></select>
+              <div id="fact-pedidos-wrap" style="display:none">
+                <div style="font-size:.78rem;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.5rem">Pedidos a facturar *</div>
+                <div id="fact-pedidos-lista" style="display:flex;flex-direction:column;gap:.4rem;max-height:200px;overflow-y:auto"></div>
               </div>
               <div class="field">
                 <label>Notas / observaciones</label>
@@ -516,7 +515,7 @@
 
         <!-- Botón guardar abajo -->
         <div style="margin-top:1rem;display:flex;gap:.6rem" id="fact-guardar-area">
-          <button onclick="guardarFacturaNueva()" class="btn btn-primary">Guardar borrador</button>
+          <button onclick="guardarFacturaNueva()" class="btn btn-primary">Guardar nueva factura</button>
           <button onclick="volverListaFacturas()" class="btn btn-secondary">Cancelar</button>
         </div>
       </div>
@@ -622,30 +621,51 @@
 </div>
 
 <!-- MODAL PEDIDO -->
-<div class="modal-overlay" id="modal-pedido">
-  <div class="modal">
+<div class="modal-overlay" id="modal-pedido" style="align-items:flex-start;padding-top:2rem">
+  <div class="modal" style="max-width:580px">
     <div class="modal-head">
       <span class="modal-title">Nuevo pedido</span>
       <button class="modal-close" onclick="cerrarModal('modal-pedido')">×</button>
     </div>
     <div class="modal-body">
-      <div class="field"><label>Cliente *</label><select id="pedido-cliente"><option value="">— Selecciona un cliente —</option></select></div>
       <div class="field-row">
-        <div class="field"><label>Tipo de ropa</label>
-          <select id="pedido-tipo">
-            <option value="1">Blanca</option><option value="2">Color</option>
-            <option value="3">Delicada</option><option value="4">Ropa hogar</option><option value="5">Especial</option>
-          <option value="6">Toallas medianas</option>
-            <option value="7">Toallas grandes</option>
-            <option value="8">Alfombrines</option>
-            <option value="9">Paños de cara</option>
-            <option value="10">Baberos</option>
-          </select>
+        <div class="field">
+          <label>Cliente *</label>
+          <select id="pedido-cliente" onchange="cargarSacosClientePedido()"><option value="">— Selecciona un cliente —</option></select>
         </div>
-        <div class="field"><label>Peso del saco (kg)</label><input type="number" id="pedido-peso" placeholder="0.0" step="0.1" min="0.1" /></div>
+        <div class="field">
+          <label>Fecha estimada de entrega *</label>
+          <input type="date" id="pedido-fecha" />
+        </div>
       </div>
-      <div class="field"><label>Fecha estimada de entrega</label><input type="date" id="pedido-fecha" /></div>
-      <div class="field"><label>Observaciones</label><input type="text" id="pedido-obs" placeholder="Notas adicionales..." /></div>
+      <div class="field">
+        <label>Observaciones</label>
+        <input type="text" id="pedido-obs" placeholder="Notas adicionales..." />
+      </div>
+
+      <!-- Sacos del cliente sin asignar -->
+      <div id="pedido-sacos-existentes-wrap" style="display:none;border-top:1px solid var(--border);padding-top:.8rem;margin-top:.4rem">
+        <div style="font-size:.78rem;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.6rem">Sacos recibidos de este cliente — selecciona los de este pedido</div>
+        <div id="pedido-sacos-existentes" style="display:flex;flex-direction:column;gap:.4rem"></div>
+      </div>
+
+      <!-- Sacos nuevos (opcional) -->
+      <div style="border-top:1px solid var(--border);padding-top:.8rem;margin-top:.4rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
+          <span style="font-size:.78rem;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.4px">Sacos nuevos <span style="font-weight:400;text-transform:none;color:var(--text-hint)">(opcional)</span></span>
+          <button type="button" onclick="addSacoPedido()" style="background:var(--brand-accent);color:#fff;border:none;border-radius:6px;padding:.3rem .8rem;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit">+ Añadir saco nuevo</button>
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:.85rem" id="pedido-sacos-table" style="display:none">
+          <thead>
+            <tr style="background:#f5f7fa">
+              <th style="text-align:left;padding:.4rem .5rem;border-bottom:1px solid var(--border)">Tipo de ropa</th>
+              <th style="text-align:right;padding:.4rem .5rem;border-bottom:1px solid var(--border);width:90px">Peso (kg)</th>
+              <th style="padding:.4rem .5rem;border-bottom:1px solid var(--border);width:32px"></th>
+            </tr>
+          </thead>
+          <tbody id="pedido-sacos-body"></tbody>
+        </table>
+      </div>
     </div>
     <div class="modal-foot">
       <button class="btn btn-secondary" onclick="cerrarModal('modal-pedido')">Cancelar</button>
@@ -750,50 +770,50 @@
 </div>
 
 <!-- MODAL SACO ADMIN -->
-<div class="modal-overlay" id="modal-saco-admin">
-  <div class="modal">
+<div class="modal-overlay" id="modal-saco-admin" style="align-items:flex-start;padding-top:2rem">
+  <div class="modal" style="max-width:580px">
     <div class="modal-head">
-      <span class="modal-title">Registrar saco recibido</span>
+      <span class="modal-title">Registrar sacos recibidos</span>
       <button class="modal-close" onclick="cerrarModal('modal-saco-admin')">×</button>
     </div>
     <div class="modal-body">
-      <div class="field">
-        <label>Cliente *</label>
-        <select id="saco-admin-cliente"><option value="">— Selecciona un cliente —</option></select>
-      </div>
-      <div class="field">
-        <label>Fecha estimada de entrega *</label>
-        <input type="date" id="saco-admin-fecha" />
-      </div>
       <div class="field-row">
         <div class="field">
-          <label>Tipo de ropa *</label>
-          <select id="saco-admin-tipo">
-            <option value="1">Blanca</option>
-            <option value="2">Color</option>
-            <option value="3">Delicada</option>
-            <option value="4">Ropa hogar</option>
-            <option value="5">Especial</option>
-            <option value="6">Toallas medianas</option>
-            <option value="7">Toallas grandes</option>
-            <option value="8">Alfombrines</option>
-            <option value="9">Paños de cara</option>
-            <option value="10">Baberos</option>
-          </select>
+          <label>Cliente *</label>
+          <select id="saco-admin-cliente"><option value="">— Selecciona un cliente —</option></select>
         </div>
         <div class="field">
-          <label>Peso (kg) *</label>
-          <input type="number" id="saco-admin-peso" placeholder="0.0" step="0.1" min="0.1" />
+          <label>Fecha estimada de entrega *</label>
+          <input type="date" id="saco-admin-fecha" />
         </div>
       </div>
       <div class="field">
         <label>Observaciones</label>
-        <input type="text" id="saco-admin-obs" placeholder="Notas del saco..." />
+        <input type="text" id="saco-admin-obs" placeholder="Notas del pedido..." />
+      </div>
+
+      <!-- Sacos -->
+      <div style="border-top:1px solid var(--border);padding-top:.8rem;margin-top:.4rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
+          <span style="font-size:.78rem;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.4px">Sacos recibidos de este cliente *</span>
+          <button type="button" onclick="addSacoAdmin()" style="background:var(--brand-accent);color:#fff;border:none;border-radius:6px;padding:.3rem .8rem;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit">+ Añadir saco</button>
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:.85rem">
+          <thead>
+            <tr style="background:#f5f7fa">
+              <th style="text-align:left;padding:.4rem .5rem;border-bottom:1px solid var(--border)">Tipo de ropa</th>
+              <th style="text-align:right;padding:.4rem .5rem;border-bottom:1px solid var(--border);width:90px">Peso (kg)</th>
+              <th style="padding:.4rem .5rem;border-bottom:1px solid var(--border);width:32px"></th>
+            </tr>
+          </thead>
+          <tbody id="sacos-admin-body"></tbody>
+        </table>
+        <div style="font-size:.78rem;color:var(--text-hint);margin-top:.4rem">Puedes añadir tantos sacos como hayan llegado de este cliente.</div>
       </div>
     </div>
     <div class="modal-foot">
       <button class="btn btn-secondary" onclick="cerrarModal('modal-saco-admin')">Cancelar</button>
-      <button class="btn btn-primary" onclick="guardarSacoAdmin()">Registrar saco</button>
+      <button class="btn btn-primary" onclick="guardarSacoAdmin()">Registrar sacos</button>
     </div>
   </div>
 </div>
@@ -882,6 +902,41 @@
     <div class="modal-foot">
       <button class="btn btn-secondary" onclick="cerrarModal('modal-factura-editar')">Cancelar</button>
       <button class="btn btn-primary" onclick="guardarFacturaEditar()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR PEDIDO -->
+<div class="modal-overlay" id="modal-editar-pedido">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title" id="editar-pedido-titulo">Editar pedido</span>
+      <button class="modal-close" onclick="cerrarModal('modal-editar-pedido')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editar-pedido-id" />
+      <div class="field">
+        <label>Estado</label>
+        <select id="editar-pedido-estado">
+          <option value="1">PENDIENTE</option>
+          <option value="2">EN PROCESO</option>
+          <option value="3">FINALIZADO</option>
+          <option value="4">ENTREGADO</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Fecha de entrega estimada</label>
+        <input type="date" id="editar-pedido-fecha" />
+      </div>
+      <div class="field">
+        <label>Observaciones</label>
+        <input type="text" id="editar-pedido-obs" placeholder="Notas adicionales..." />
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="cerrarModal('modal-editar-pedido')">Cancelar</button>
+      <button class="btn btn-delete" onclick="eliminarPedido()">Eliminar</button>
+      <button class="btn btn-primary" onclick="guardarEditarPedido()">Guardar cambios</button>
     </div>
   </div>
 </div>
@@ -988,11 +1043,11 @@ async function guardarCliente() {
 }
 
 async function eliminarCliente(id) {
-  if (!confirm('¿Eliminar este cliente?')) return;
-  const res  = await fetch(`${API}/clientes.php?id=${id}`, { method: 'DELETE' });
+  if (!confirm('¿Eliminar este cliente?\n\nATENCIÓN: Se eliminarán también todos sus pedidos, sacos y facturas asociadas. Esta acción no se puede deshacer.')) return;
+  const res  = await fetch(`${API}/clientes.php?id=${id}&forzar=1`, { method: 'DELETE' });
   const data = await res.json();
-  if (data.ok) { toast('Cliente eliminado'); cargarClientes(); }
-  else toast('Error al eliminar', 'error');
+  if (data.ok) { toast('Cliente y todos sus datos eliminados'); cargarClientes(); cargarPedidos(); }
+  else toast(data.error || 'Error al eliminar', 'error');
 }
 
 /* ── PEDIDOS ── */
@@ -1014,6 +1069,7 @@ async function cargarPedidos() {
       <td style="display:flex;gap:.4rem">
         <button class="btn-table btn-edit" onclick="cambiarEstado(${p.pedido_id},'${p.estado}')">Avanzar</button>
         <button class="btn-table" style="background:#f3f0ff;color:#6d28d9" onclick="abrirDetallePedido(${p.pedido_id},'${p.cliente}','${p.estado}','${p.fecha_entrada}')">📦 Sacos</button>
+        <button class="btn-table" style="background:#e8f0fe;color:#1d4ed8" onclick="abrirEditarPedido(${p.pedido_id},'${p.estado}','${p.fecha_entrada}')">✏️ Editar</button>
       </td>
     </tr>`).join('');
   const dash = document.getElementById('dash-pedidos');
@@ -1026,25 +1082,174 @@ async function cargarPedidos() {
     </tr>`).join('');
 }
 
+let sacosNuevoPedido = [];
+let sacoPedidoCount = 0;
+
 async function abrirModalPedido() {
   const res      = await fetch(`${API}/clientes.php`);
   const clientes = await res.json();
   document.getElementById('pedido-cliente').innerHTML =
     '<option value="">— Selecciona un cliente —</option>' +
     clientes.map(c => `<option value="${c.id}">${c.nombre} ${c.apellidos}</option>`).join('');
+  sacosNuevoPedido = [];
+  sacoPedidoCount  = 0;
+  document.getElementById('pedido-sacos-body').innerHTML = '';
+  document.getElementById('pedido-fecha').value = '';
+  document.getElementById('pedido-obs').value   = '';
+  document.getElementById('pedido-sacos-existentes-wrap').style.display = 'none';
+  document.getElementById('pedido-sacos-existentes').innerHTML = '';
   abrirModal('modal-pedido');
+}
+
+const tiposRopaNombres = {1:'Blanca',2:'Color',3:'Delicada',4:'Ropa hogar',5:'Especial',6:'Toallas medianas',7:'Toallas grandes',8:'Alfombrines',9:'Paños de cara',10:'Baberos'};
+
+async function cargarSacosClientePedido() {
+  const cid  = document.getElementById('pedido-cliente').value;
+  const wrap = document.getElementById('pedido-sacos-existentes-wrap');
+  const cont = document.getElementById('pedido-sacos-existentes');
+  cont.innerHTML = '';
+  if (!cid) { wrap.style.display = 'none'; return; }
+
+  // Cargar todos los sacos del cliente
+  const resSacos = await fetch(`${API}/sacos.php`);
+  const todosSacos = await resSacos.json();
+
+  // Filtrar sacos de este cliente
+  const resPed  = await fetch(`${API}/pedidos.php`);
+  const pedidos = await resPed.json();
+  const pedidosCliente = pedidos.filter(p => String(p.cliente_id) === String(cid));
+  const idsPedidosCliente = new Set(pedidosCliente.map(p => String(p.pedido_id)));
+  const sacosCliente = todosSacos.filter(s => idsPedidosCliente.has(String(s.pedido_id)));
+
+  if (!sacosCliente.length) { wrap.style.display = 'none'; return; }
+
+  sacosCliente.forEach(s => {
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex;align-items:center;gap:.6rem;padding:.45rem .6rem;background:#f5f7fa;border-radius:8px;border:1.5px solid var(--border)';
+    div.innerHTML = `
+      <input type="checkbox" id="saco-ex-${s.id}" value="${s.id}" data-tipo="${s.tipo_ropa_id}" data-peso="${s.peso_kg}" data-pedido-id="${s.pedido_id}" style="width:16px;height:16px;cursor:pointer" />
+      <label for="saco-ex-${s.id}" style="cursor:pointer;flex:1;font-size:.88rem">
+        <strong>${tiposRopaNombres[s.tipo_ropa_id]||s.tipo_ropa||'Tipo '+s.tipo_ropa_id}</strong>
+        — ${parseFloat(s.peso_kg).toFixed(1)} kg
+        — ${parseFloat(s.precio_kg).toFixed(2)} €/kg
+        — <span style="color:#22c55e;font-weight:600">${parseFloat(s.subtotal).toFixed(2)} €</span>
+        <span style="color:var(--text-hint);font-size:.78rem"> (${s.fecha_entrada||''})</span>
+      </label>`;
+    cont.appendChild(div);
+  });
+  wrap.style.display = 'block';
+}
+
+function addSacoPedido() {
+  const tbody = document.getElementById('pedido-sacos-body');
+  const id    = sacoPedidoCount++;
+  const tr    = document.createElement('tr');
+  tr.id = `saco-ped-${id}`;
+  tr.style.borderBottom = '1px solid var(--border)';
+  tr.innerHTML = `
+    <td style="padding:.35rem .5rem">
+      <select style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:.4rem .6rem;font-family:inherit;font-size:.85rem;background:#f5f7fa;outline:none">
+        <option value="1">Blanca</option><option value="2">Color</option>
+        <option value="3">Delicada</option><option value="4">Ropa hogar</option>
+        <option value="5">Especial</option><option value="6">Toallas medianas</option>
+        <option value="7">Toallas grandes</option><option value="8">Alfombrines</option>
+        <option value="9">Paños de cara</option><option value="10">Baberos</option>
+      </select>
+    </td>
+    <td style="padding:.35rem .5rem">
+      <input type="number" placeholder="0.0" step="0.1" min="0.1" style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:.4rem .6rem;font-family:inherit;font-size:.85rem;background:#f5f7fa;outline:none;text-align:right" />
+    </td>
+    <td style="padding:.35rem .5rem;text-align:center">
+      <button type="button" onclick="document.getElementById('saco-ped-${id}').remove()" style="background:none;border:none;cursor:pointer;color:#ef4444;font-size:1rem;line-height:1">×</button>
+    </td>`;
+  tbody.appendChild(tr);
 }
 
 async function guardarPedido() {
   const cliente_id = document.getElementById('pedido-cliente').value;
-  const peso       = document.getElementById('pedido-peso').value;
+  const fecha      = document.getElementById('pedido-fecha').value;
+  const obs        = document.getElementById('pedido-obs').value;
+
   if (!cliente_id) { toast('Selecciona un cliente', 'error'); return; }
-  if (!peso || peso <= 0) { toast('Introduce el peso del saco', 'error'); return; }
-  const body = { cliente_id: parseInt(cliente_id), empleado_id: 1, fecha_estimada: document.getElementById('pedido-fecha').value, observaciones: document.getElementById('pedido-obs').value };
-  const res  = await fetch(`${API}/pedidos.php`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
-  const data = await res.json();
-  if (data.ok) { toast('Pedido creado correctamente'); cerrarModal('modal-pedido'); cargarPedidos(); }
-  else toast(data.error || 'Error al crear pedido', 'error');
+  if (!fecha)      { toast('Indica la fecha de entrega', 'error'); return; }
+
+  // Sacos nuevos (opcionales)
+  const filas = document.querySelectorAll('#pedido-sacos-body tr');
+  const sacosNuevos = [];
+  for (const fila of filas) {
+    const sel  = fila.querySelector('select');
+    const inp  = fila.querySelector('input');
+    const tipo = sel ? parseInt(sel.value) : 0;
+    const peso = inp ? parseFloat(inp.value) : 0;
+    if (peso > 0) sacosNuevos.push({ tipo_ropa_id: tipo, peso_kg: peso });
+  }
+
+  // Sacos existentes seleccionados
+  const checksExistentes = document.querySelectorAll('#pedido-sacos-existentes input[type=checkbox]:checked');
+
+  if (!sacosNuevos.length && !checksExistentes.length) {
+    toast('Selecciona o añade al menos un saco', 'error'); return;
+  }
+
+  let pedidoId = null;
+  let total = 0, errores = 0;
+
+  if (sacosNuevos.length > 0) {
+    // Hay sacos nuevos: crear un pedido nuevo y añadirlos
+    const resPed = await fetch(`${API}/pedidos.php`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ cliente_id: parseInt(cliente_id), empleado_id: 1, fecha_estimada: fecha, observaciones: obs })
+    });
+    const dataPed = await resPed.json();
+    if (!dataPed.ok) { toast(dataPed.error || 'Error al crear el pedido', 'error'); return; }
+    pedidoId = dataPed.id;
+
+    for (const saco of sacosNuevos) {
+      const res = await fetch(`${API}/sacos.php`, {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ pedido_id: pedidoId, tipo_ropa_id: saco.tipo_ropa_id, peso_kg: saco.peso_kg })
+      });
+      const d = await res.json();
+      d.ok ? total++ : errores++;
+    }
+
+    // Si además hay sacos existentes, también moverlos a este nuevo pedido
+    for (const chk of checksExistentes) {
+      const res = await fetch(`${API}/sacos.php`, {
+        method: 'PUT', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ id: parseInt(chk.value), pedido_id: pedidoId })
+      });
+      const d = await res.json();
+      d.ok ? total++ : errores++;
+    }
+
+  } else {
+    // Solo sacos existentes: usar el pedido que ya tienen (el del primer checkbox)
+    // Todos los sacos seleccionados ya pertenecen a un pedido — actualizamos fecha y obs
+    pedidoId = parseInt(checksExistentes[0].dataset.pedidoId);
+    
+    // Actualizar fecha y observaciones del pedido existente
+    await fetch(`${API}/pedidos.php`, {
+      method: 'PUT', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ id: pedidoId, fecha_entrega: fecha, observaciones: obs })
+    });
+
+    // Si hay sacos de diferentes pedidos, moverlos todos al primero
+    for (const chk of checksExistentes) {
+      const sacosPedidoId = parseInt(chk.dataset.pedidoId);
+      if (sacosPedidoId !== pedidoId) {
+        await fetch(`${API}/sacos.php`, {
+          method: 'PUT', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ id: parseInt(chk.value), pedido_id: pedidoId })
+        });
+      }
+      total++;
+    }
+  }
+
+  toast(`Pedido #${String(pedidoId).padStart(4,'0')} listo con ${total} saco(s)`);
+  cerrarModal('modal-pedido');
+  cargarPedidos();
 }
 
 async function cambiarEstado(id, estadoActual) {
@@ -1166,8 +1371,9 @@ async function cargarFacturas() {
       <td style="text-align:right">${parseFloat(f.iva_importe||0).toFixed(2).replace('.',',')} €</td>
       <td style="text-align:right;font-weight:700">${parseFloat(f.total||0).toFixed(2).replace('.',',')} €</td>
       <td>${estadoBadge(estado)}</td>
-      <td onclick="event.stopPropagation()">
+      <td onclick="event.stopPropagation()" style="display:flex;gap:.3rem">
         <button onclick="window.open('${API}/exportar_pdf.php?id=${f.id}','_blank')" style="background:#fff0f0;color:#ef4444;border:1px solid #fca5a5;border-radius:6px;padding:.3rem .6rem;font-size:.75rem;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap">⬇ PDF</button>
+        <button onclick="window.open('${API}/exportar_facturas.php?id=${f.id}','_blank')" style="background:#e6f9f0;color:#15803d;border:1px solid #bbf7d0;border-radius:6px;padding:.3rem .6rem;font-size:.75rem;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap">⬇ XLS</button>
       </td>
     </tr>`;
   }).join('');
@@ -1276,29 +1482,73 @@ async function abrirNuevaFactura() {
   document.getElementById('fact-estado-badge').className = 'badge pendiente';
   document.getElementById('fact-estado-badge').textContent = 'BORRADOR';
   document.getElementById('fact-estado-desc').textContent = 'Nueva factura en modo borrador.';
+  document.getElementById('fact-pedidos-wrap').style.display = 'none';
+  document.getElementById('fact-pedidos-lista').innerHTML = '';
 
-  // Cargar clientes
   const resCli = await fetch(`${API}/clientes.php`);
   const clis   = await resCli.json();
   document.getElementById('fact-cliente').innerHTML = '<option value="">— Selecciona un cliente —</option>' +
     clis.map(c => `<option value="${c.id}">${c.nombre} ${c.apellidos}</option>`).join('');
-  document.getElementById('fact-pedido').innerHTML = '<option value="">— Primero selecciona un cliente —</option>';
 
-  // Líneas
   lineaCount = 0;
   document.getElementById('fact-lineas').innerHTML = '';
-  addLinea();
   calcularTotales();
 }
 
-async function cargarPedidosCliente() {
+async function cargarPedidosFactura() {
   const cid = document.getElementById('fact-cliente').value;
-  if (!cid) return;
-  const res     = await fetch(`${API}/pedidos.php`);
-  const pedidos = await res.json();
-  const activos = pedidos.filter(p => String(p.cliente_id) === String(cid));
-  document.getElementById('fact-pedido').innerHTML = '<option value="">— Selecciona un pedido —</option>' +
-    activos.map(p => `<option value="${p.pedido_id}">#${String(p.pedido_id).padStart(4,'0')} — ${p.estado} — ${p.fecha_entrada}</option>`).join('');
+  const wrap = document.getElementById('fact-pedidos-wrap');
+  const lista = document.getElementById('fact-pedidos-lista');
+  lista.innerHTML = '';
+  if (!cid) { wrap.style.display = 'none'; return; }
+
+  const resPed  = await fetch(`${API}/pedidos.php`);
+  const pedidos = await resPed.json();
+  const delCliente = pedidos.filter(p => String(p.cliente_id) === String(cid));
+
+  if (!delCliente.length) { wrap.style.display = 'none'; return; }
+
+  for (const p of delCliente) {
+    // Cargar sacos del pedido para calcular importe
+    const resSacos = await fetch(`${API}/sacos.php?pedido_id=${p.pedido_id}`);
+    const sacos    = await resSacos.json();
+    const importePed = sacos.reduce((s,x) => s + parseFloat(x.subtotal||0), 0);
+
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex;align-items:center;gap:.6rem;padding:.5rem .7rem;background:#f5f7fa;border-radius:8px;border:1.5px solid var(--border)';
+    div.innerHTML = `
+      <input type="checkbox" id="fact-ped-${p.pedido_id}" value="${p.pedido_id}" data-importe="${importePed.toFixed(2)}"
+        onchange="recalcularLineasFactura()"
+        style="width:16px;height:16px;cursor:pointer" />
+      <label for="fact-ped-${p.pedido_id}" style="cursor:pointer;flex:1;font-size:.88rem">
+        <strong>#${String(p.pedido_id).padStart(4,'0')}</strong>
+        — ${p.fecha_entrada}
+        — <span class="badge ${estadoClass[p.estado]||'pendiente'}">${p.estado}</span>
+        — <span style="color:#22c55e;font-weight:600">${importePed.toFixed(2).replace('.',',')} €</span>
+        (${p.num_sacos} sacos / ${p.peso_total_kg} kg)
+      </label>`;
+    lista.appendChild(div);
+  }
+  wrap.style.display = 'block';
+}
+
+async function recalcularLineasFactura() {
+  // Limpiar líneas actuales y regenerar desde pedidos seleccionados
+  const checks = document.querySelectorAll('#fact-pedidos-lista input[type=checkbox]:checked');
+  lineaCount = 0;
+  document.getElementById('fact-lineas').innerHTML = '';
+
+  for (const chk of checks) {
+    const pedId = chk.value;
+    const resSacos = await fetch(`${API}/sacos.php?pedido_id=${pedId}`);
+    const sacos    = await resSacos.json();
+    const tiposN   = {1:'Blanca',2:'Color',3:'Delicada',4:'Ropa hogar',5:'Especial',6:'Toallas med.',7:'Toallas gr.',8:'Alfombrines',9:'Paños cara',10:'Baberos'};
+    sacos.forEach(s => {
+      addLinea('Lavado ' + (tiposN[s.tipo_ropa_id]||s.tipo_ropa||'') + ' - Pedido #' + String(pedId).padStart(4,'0'), s.peso_kg, s.precio_kg);
+    });
+  }
+  if (!document.querySelectorAll('#fact-lineas tr').length) addLinea();
+  calcularTotales();
 }
 
 function addLinea(desc='', cant=1, precio=0) {
@@ -1308,9 +1558,9 @@ function addLinea(desc='', cant=1, precio=0) {
   tr.id = `linea-${id}`;
   tr.innerHTML = `
     <td style="border:1px solid var(--border);padding:.3rem .4rem"><input type="text" value="${desc}" placeholder="Descripción del servicio..." style="width:100%;border:none;background:transparent;font-family:inherit;font-size:.88rem;outline:none" oninput="calcularTotales()" /></td>
-    <td style="border:1px solid var(--border);padding:.3rem .4rem"><input type="number" value="${parseFloat(cant).toFixed(2)}" step="0.01" min="0" style="width:100%;border:none;background:transparent;font-family:inherit;font-size:.88rem;text-align:right;outline:none" oninput="calcularTotales()" /></td>
-    <td style="border:1px solid var(--border);padding:.3rem .4rem"><input type="number" value="${parseFloat(precio).toFixed(2)}" step="0.01" min="0" style="width:100%;border:none;background:transparent;font-family:inherit;font-size:.88rem;text-align:right;outline:none" oninput="calcularTotales()" /></td>
-    <td style="border:1px solid var(--border);padding:.3rem .6rem;text-align:right;font-weight:600" id="sub-${id}">${(cant*precio).toFixed(2).replace('.',',')} €</td>
+    <td style="border:1px solid var(--border);padding:.3rem .4rem"><input type="number" value="${parseFloat(cant||1).toFixed(2)}" step="0.01" min="0.01" placeholder="1.00" style="width:100%;border:none;background:transparent;font-family:inherit;font-size:.88rem;text-align:right;outline:none" oninput="calcularTotales()" /></td>
+    <td style="border:1px solid var(--border);padding:.3rem .4rem"><input type="number" value="${parseFloat(precio||0).toFixed(2)}" step="0.01" min="0" placeholder="0.00" style="width:100%;border:none;background:transparent;font-family:inherit;font-size:.88rem;text-align:right;outline:none;${parseFloat(precio||0)===0?'border-bottom:2px solid #f59e0b;':''}" oninput="calcularTotales()" /></td>
+    <td style="border:1px solid var(--border);padding:.3rem .6rem;text-align:right;font-weight:600" id="sub-${id}">${(parseFloat(cant||1)*parseFloat(precio||0)).toFixed(2).replace('.',',')} €</td>
     <td style="border:1px solid var(--border);padding:.3rem;text-align:center"><button onclick="document.getElementById('linea-${id}').remove();calcularTotales()" style="background:none;border:none;cursor:pointer;color:#ef4444;font-size:1rem">×</button></td>`;
   tbody.appendChild(tr);
 }
@@ -1336,27 +1586,39 @@ function calcularTotales() {
 }
 
 async function guardarFacturaNueva() {
-  const pedido_id = document.getElementById('fact-pedido').value;
-  if (!pedido_id) { toast('Selecciona un pedido', 'error'); return; }
+  // Recoger pedidos seleccionados
+  const checks = document.querySelectorAll('#fact-pedidos-lista input[type=checkbox]:checked');
+  if (!checks.length) { toast('Selecciona al menos un pedido', 'error'); return; }
 
   const lineas = [];
   document.querySelectorAll('#fact-lineas tr').forEach(tr => {
     const inputs = tr.querySelectorAll('input');
     if (inputs.length >= 3) {
-      const desc  = inputs[0].value.trim();
-      const cant  = parseFloat(inputs[1].value)||0;
-      const prec  = parseFloat(inputs[2].value)||0;
+      const desc = inputs[0].value.trim();
+      const cant = parseFloat(inputs[1].value)||0;
+      const prec = parseFloat(inputs[2].value)||0;
       if (desc && prec > 0) lineas.push({ descripcion: desc, cantidad: cant, precio_unitario: prec });
     }
   });
 
-  const body = {
-    pedido_id:    parseInt(pedido_id),
-    fecha_emision: document.getElementById('fact-fecha').value,
-    notas:        document.getElementById('fact-notas').value,
-    lineas,
-  };
+  // Usar el primer pedido seleccionado como pedido_id principal
+  const pedido_id = parseInt(checks[0].value);
+  const fecha     = document.getElementById('fact-fecha').value;
+  const notas     = document.getElementById('fact-notas').value;
 
+  // Calcular base desde líneas
+  let base = lineas.reduce((s,l) => s + (l.cantidad * l.precio_unitario), 0);
+
+  // Si no hay líneas con precio, calcular desde sacos de todos los pedidos seleccionados
+  if (base <= 0) {
+    for (const chk of checks) {
+      const res  = await fetch(`${API}/sacos.php?pedido_id=${chk.value}`);
+      const sacos = await res.json();
+      base += sacos.reduce((s,x) => s + parseFloat(x.subtotal||0), 0);
+    }
+  }
+
+  const body = { pedido_id, fecha_emision: fecha, notas, lineas };
   const res  = await fetch(`${API}/facturas.php`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
   const data = await res.json();
   if (data.ok) { toast('Factura ' + data.numero + ' creada'); volverListaFacturas(); }
@@ -1368,11 +1630,17 @@ async function generarFacturasMes() {
   if (!mes) { toast('Selecciona un mes primero', 'error'); return; }
   const res  = await fetch(`${API}/facturas.php?generar_mes=${mes}`);
   const data = await res.json();
-  if (data.ok) { toast(data.generadas + ' factura(s) generada(s) para ' + mes); cargarFacturas(); }
-  else toast(data.error || 'Error al generar', 'error');
+  if (data.ok) {
+    toast(data.generadas + ' factura(s) generada(s). Descargando Excel...');
+    cargarFacturas();
+    // Descargar Excel automaticamente
+    setTimeout(() => {
+      window.location.href = `${API}/exportar_facturas.php?mes=${mes}`;
+    }, 800);
+  } else toast(data.error || 'Error al generar', 'error');
 }
 
-function exportarExcel() {
+function exportarExcelMes() {
   const mes = document.getElementById('mes-facturacion').value;
   if (!mes) { toast('Selecciona un mes primero', 'error'); return; }
   window.location.href = `${API}/exportar_facturas.php?mes=${mes}`;
@@ -1598,6 +1866,7 @@ function renderPedidos(data) {
       <td style="display:flex;gap:.4rem">
         <button class="btn-table btn-edit" onclick="cambiarEstado(${p.pedido_id},'${p.estado}')">Avanzar</button>
         <button class="btn-table" style="background:#f3f0ff;color:#6d28d9" onclick="abrirDetallePedido(${p.pedido_id},'${p.cliente}','${p.estado}','${p.fecha_entrada}')">📦 Sacos</button>
+        <button class="btn-table" style="background:#e8f0fe;color:#1d4ed8" onclick="abrirEditarPedido(${p.pedido_id},'${p.estado}','${p.fecha_entrada}')">✏️ Editar</button>
       </td>
     </tr>`).join('');
 }
@@ -1661,32 +1930,68 @@ async function guardarSacoPedido() {
 }
 
 /* ── SACO ADMIN ── */
+let sacoAdminCount = 0;
+
+function addSacoAdmin() {
+  const tbody = document.getElementById('sacos-admin-body');
+  const id    = sacoAdminCount++;
+  const tr    = document.createElement('tr');
+  tr.id = `saco-adm-${id}`;
+  tr.style.borderBottom = '1px solid var(--border)';
+  tr.innerHTML = `
+    <td style="padding:.35rem .5rem">
+      <select style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:.4rem .6rem;font-family:inherit;font-size:.85rem;background:#f5f7fa;outline:none">
+        <option value="1">Blanca</option><option value="2">Color</option>
+        <option value="3">Delicada</option><option value="4">Ropa hogar</option>
+        <option value="5">Especial</option><option value="6">Toallas medianas</option>
+        <option value="7">Toallas grandes</option><option value="8">Alfombrines</option>
+        <option value="9">Paños de cara</option><option value="10">Baberos</option>
+      </select>
+    </td>
+    <td style="padding:.35rem .5rem">
+      <input type="number" placeholder="0.0" step="0.1" min="0.1" style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:.4rem .6rem;font-family:inherit;font-size:.85rem;background:#f5f7fa;outline:none;text-align:right" />
+    </td>
+    <td style="padding:.35rem .5rem;text-align:center">
+      <button type="button" onclick="document.getElementById('saco-adm-${id}').remove()" style="background:none;border:none;cursor:pointer;color:#ef4444;font-size:1rem;line-height:1">×</button>
+    </td>`;
+  tbody.appendChild(tr);
+}
+
 async function abrirModalSacoAdmin() {
   const res      = await fetch(`${API}/clientes.php`);
   const clientes = await res.json();
-  const selCliente = document.getElementById('saco-admin-cliente');
-  selCliente.innerHTML = '<option value="">— Selecciona un cliente —</option>' +
+  document.getElementById('saco-admin-cliente').innerHTML = '<option value="">— Selecciona un cliente —</option>' +
     clientes.map(c => `<option value="${c.id}">${c.nombre} ${c.apellidos}</option>`).join('');
-  selCliente.onchange = null;
-  document.getElementById('saco-admin-peso').value = '';
-  document.getElementById('saco-admin-obs').value  = '';
+  document.getElementById('saco-admin-obs').value = '';
   const manana = new Date(); manana.setDate(manana.getDate() + 1);
   document.getElementById('saco-admin-fecha').value = manana.toISOString().split('T')[0];
+  sacoAdminCount = 0;
+  document.getElementById('sacos-admin-body').innerHTML = '';
+  addSacoAdmin();
   abrirModal('modal-saco-admin');
 }
 
 async function guardarSacoAdmin() {
-  const cliente_id   = document.getElementById('saco-admin-cliente').value;
-  const fecha        = document.getElementById('saco-admin-fecha').value;
-  const tipo_ropa_id = document.getElementById('saco-admin-tipo').value;
-  const peso_kg      = document.getElementById('saco-admin-peso').value;
-  const obs          = document.getElementById('saco-admin-obs').value;
+  const cliente_id = document.getElementById('saco-admin-cliente').value;
+  const fecha      = document.getElementById('saco-admin-fecha').value;
+  const obs        = document.getElementById('saco-admin-obs').value;
 
-  if (!cliente_id)              { toast('Selecciona un cliente', 'error'); return; }
-  if (!fecha)                   { toast('Indica la fecha de entrega', 'error'); return; }
-  if (!peso_kg || peso_kg <= 0) { toast('Introduce el peso del saco', 'error'); return; }
+  if (!cliente_id) { toast('Selecciona un cliente', 'error'); return; }
+  if (!fecha)      { toast('Indica la fecha de entrega', 'error'); return; }
 
-  // 1. Crear el pedido
+  // Recoger sacos
+  const filas = document.querySelectorAll('#sacos-admin-body tr');
+  const sacos = [];
+  for (const fila of filas) {
+    const sel  = fila.querySelector('select');
+    const inp  = fila.querySelector('input');
+    const tipo = sel ? parseInt(sel.value) : 0;
+    const peso = inp ? parseFloat(inp.value) : 0;
+    if (peso > 0) sacos.push({ tipo_ropa_id: tipo, peso_kg: peso });
+  }
+  if (!sacos.length) { toast('Añade al menos un saco con peso', 'error'); return; }
+
+  // 1. Crear pedido
   const resPed  = await fetch(`${API}/pedidos.php`, {
     method: 'POST', headers: {'Content-Type':'application/json'},
     body: JSON.stringify({ cliente_id: parseInt(cliente_id), empleado_id: 1, fecha_estimada: fecha, observaciones: obs })
@@ -1694,18 +1999,27 @@ async function guardarSacoAdmin() {
   const dataPed = await resPed.json();
   if (!dataPed.ok) { toast(dataPed.error || 'Error al crear el pedido', 'error'); return; }
 
-  // 2. Crear el saco vinculado al pedido
-  const resSaco  = await fetch(`${API}/sacos.php`, {
-    method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ pedido_id: dataPed.id, tipo_ropa_id: parseInt(tipo_ropa_id), peso_kg: parseFloat(peso_kg) })
-  });
-  const dataSaco = await resSaco.json();
-  if (dataSaco.ok) {
-    toast('Saco registrado correctamente');
+  // 2. Crear todos los sacos
+  let errores = 0;
+  for (const saco of sacos) {
+    const res = await fetch(`${API}/sacos.php`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ pedido_id: dataPed.id, tipo_ropa_id: saco.tipo_ropa_id, peso_kg: saco.peso_kg })
+    });
+    const d = await res.json();
+    if (!d.ok) errores++;
+  }
+
+  if (errores === 0) {
+    toast(`${sacos.length} saco(s) registrado(s) correctamente`);
     cerrarModal('modal-saco-admin');
     cargarSacosAdmin();
     cargarPedidos();
-  } else toast(dataSaco.error || 'Error al registrar saco', 'error');
+  } else {
+    toast(`Pedido creado pero ${errores} saco(s) fallaron`, 'error');
+    cerrarModal('modal-saco-admin');
+    cargarSacosAdmin();
+  }
 }
 
 let chartEstados = null;
@@ -1822,7 +2136,7 @@ async function cargarDashboard() {
   }
 }
 
-function exportarExcel() {
+function exportarExcelMes() {
   const mes = document.getElementById('mes-facturacion').value;
   if (!mes) { toast('Selecciona un mes primero', 'error'); return; }
   window.location.href = `${API}/exportar_facturas.php?mes=${mes}`;
@@ -1959,6 +2273,39 @@ async function cambiarPassword() {
     document.getElementById('pwd-nueva').value     = '';
     document.getElementById('pwd-confirmar').value = '';
   } else toast(data.error || 'Error al cambiar contraseña', 'error');
+}
+
+function abrirEditarPedido(id, estado, fecha) {
+  document.getElementById('editar-pedido-id').value = id;
+  document.getElementById('editar-pedido-titulo').textContent = `Editar pedido #${String(id).padStart(4,'0')}`;
+  document.getElementById('editar-pedido-fecha').value = fecha || '';
+  document.getElementById('editar-pedido-obs').value   = '';
+  const estadoMap = { 'PENDIENTE':'1','EN_PROCESO':'2','FINALIZADO':'3','ENTREGADO':'4' };
+  document.getElementById('editar-pedido-estado').value = estadoMap[estado] || '1';
+  abrirModal('modal-editar-pedido');
+}
+
+async function guardarEditarPedido() {
+  const id      = document.getElementById('editar-pedido-id').value;
+  const estadoId = parseInt(document.getElementById('editar-pedido-estado').value);
+  const fecha   = document.getElementById('editar-pedido-fecha').value;
+  const obs     = document.getElementById('editar-pedido-obs').value;
+  const res  = await fetch(`${API}/pedidos.php`, {
+    method: 'PUT', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ id: parseInt(id), estado_id: estadoId, fecha_entrega: fecha, observaciones: obs })
+  });
+  const data = await res.json();
+  if (data.ok) { toast('Pedido actualizado'); cerrarModal('modal-editar-pedido'); cargarPedidos(); }
+  else toast(data.error || 'Error al actualizar', 'error');
+}
+
+async function eliminarPedido() {
+  const id = document.getElementById('editar-pedido-id').value;
+  if (!confirm('¿Eliminar este pedido? Se eliminarán también sus sacos.')) return;
+  const res  = await fetch(`${API}/pedidos.php?id=${id}`, { method: 'DELETE' });
+  const data = await res.json();
+  if (data.ok) { toast('Pedido eliminado'); cerrarModal('modal-editar-pedido'); cargarPedidos(); }
+  else toast(data.error || 'Error al eliminar', 'error');
 }
 
 window.addEventListener('load', () => {

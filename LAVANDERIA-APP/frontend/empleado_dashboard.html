@@ -274,29 +274,39 @@
           <div class="field-row">
             <div class="field">
               <label>Cliente *</label>
-              <select id="np-cliente"><option value="">— Selecciona un cliente —</option></select>
+              <select id="np-cliente" onchange="cargarSacosClienteEmp()"><option value="">— Selecciona un cliente —</option></select>
             </div>
-            <div class="field"><label>Fecha estimada de entrega</label><input type="date" id="np-fecha" /></div>
+            <div class="field"><label>Fecha estimada de entrega *</label><input type="date" id="np-fecha" /></div>
           </div>
-          <div class="field-row">
-            <div class="field">
-              <label>Tipo de ropa *</label>
-              <select id="np-tipo">
-                <option value="1">Blanca</option>
-                <option value="2">Color</option>
-                <option value="3">Delicada</option>
-                <option value="4">Ropa hogar</option>
-                <option value="5">Especial</option>
-                <option value="6">Toallas medianas</option>
-                <option value="7">Toallas grandes</option>
-                <option value="8">Alfombrines</option>
-                <option value="9">Paños de cara</option>
-                <option value="10">Baberos</option>
-              </select>
+          <div class="field">
+            <label>Observaciones</label>
+            <input type="text" id="np-obs" placeholder="Notas adicionales..." />
+          </div>
+
+          <!-- Sacos existentes del cliente -->
+          <div id="np-sacos-existentes-wrap" style="display:none;border-top:1px solid var(--border);padding-top:.8rem;margin-top:.8rem">
+            <div style="font-size:.78rem;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.6rem">Sacos recibidos de este cliente — selecciona los de este pedido</div>
+            <div id="np-sacos-existentes" style="display:flex;flex-direction:column;gap:.4rem"></div>
+          </div>
+
+          <!-- Sacos nuevos (opcional) -->
+          <div style="border-top:1px solid var(--border);padding-top:.8rem;margin-top:.8rem">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
+              <span style="font-size:.78rem;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.4px">Sacos nuevos <span style="font-weight:400;text-transform:none;color:var(--text-hint)">(opcional)</span></span>
+              <button type="button" onclick="addSacoNuevoPedidoEmp()" style="background:#f5f7fa;color:var(--brand-accent);border:1px solid var(--border);border-radius:6px;padding:.3rem .8rem;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit">+ Añadir saco nuevo</button>
             </div>
-            <div class="field"><label>Peso del saco (kg) *</label><input type="number" id="np-peso" placeholder="0.0" step="0.1" min="0.1" /></div>
+            <table style="width:100%;border-collapse:collapse;font-size:.85rem">
+              <thead>
+                <tr style="background:#f5f7fa">
+                  <th style="text-align:left;padding:.4rem .5rem;border-bottom:1px solid var(--border)">Tipo de ropa</th>
+                  <th style="text-align:right;padding:.4rem .5rem;border-bottom:1px solid var(--border);width:90px">Peso (kg)</th>
+                  <th style="padding:.4rem .5rem;border-bottom:1px solid var(--border);width:32px"></th>
+                </tr>
+              </thead>
+              <tbody id="np-sacos-nuevos-body"></tbody>
+            </table>
           </div>
-          <div class="field" style="margin-top:.5rem"><label>Observaciones</label><textarea id="np-obs" rows="3" placeholder="Notas adicionales..."></textarea></div>
+
           <div style="margin-top:1.2rem">
             <button class="btn btn-primary" onclick="guardarNuevoPedido()">Guardar pedido</button>
           </div>
@@ -454,50 +464,45 @@
 </div>
 
 <!-- MODAL NUEVO SACO -->
-<div class="modal-overlay" id="modal-saco">
-  <div class="modal">
+<div class="modal-overlay" id="modal-saco" style="align-items:flex-start;padding-top:2rem">
+  <div class="modal" style="max-width:560px">
     <div class="modal-head">
-      <span class="modal-title">Registrar saco recibido</span>
+      <span class="modal-title">Registrar sacos recibidos</span>
       <button class="modal-close" onclick="cerrarModal('modal-saco')">×</button>
     </div>
     <div class="modal-body">
-      <div class="field">
-        <label>Cliente *</label>
-        <select id="saco-cliente"><option value="">— Selecciona un cliente —</option></select>
-      </div>
-      <div class="field">
-        <label>Fecha estimada de entrega *</label>
-        <input type="date" id="saco-fecha" />
-      </div>
       <div class="field-row">
         <div class="field">
-          <label>Tipo de ropa *</label>
-          <select id="saco-tipo">
-            <option value="1">Blanca</option>
-            <option value="2">Color</option>
-            <option value="3">Delicada</option>
-            <option value="4">Ropa hogar</option>
-            <option value="5">Especial</option>
-            <option value="6">Toallas medianas</option>
-            <option value="7">Toallas grandes</option>
-            <option value="8">Alfombrines</option>
-            <option value="9">Paños de cara</option>
-            <option value="10">Baberos</option>
-          </select>
+          <label>Cliente *</label>
+          <select id="saco-cliente"><option value="">— Selecciona un cliente —</option></select>
         </div>
         <div class="field">
-          <label>Peso (kg) *</label>
-          <input type="number" id="saco-peso" placeholder="0.0" step="0.1" min="0.1" />
+          <label>Fecha estimada de entrega *</label>
+          <input type="date" id="saco-fecha" />
         </div>
       </div>
       <div class="field">
         <label>Observaciones</label>
-        <input type="text" id="saco-obs" placeholder="Notas del saco..." />
+        <input type="text" id="saco-obs" placeholder="Notas del pedido..." />
+      </div>
+      <div style="border-top:1px solid var(--border);padding-top:.8rem;margin-top:.4rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
+          <span style="font-size:.78rem;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.4px">Sacos recibidos *</span>
+          <button type="button" onclick="addSacoEmp()" style="background:var(--brand-accent);color:#fff;border:none;border-radius:6px;padding:.3rem .8rem;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit">+ Añadir saco</button>
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:.85rem">
+          <thead><tr style="background:#f5f7fa">
+            <th style="text-align:left;padding:.4rem .5rem;border-bottom:1px solid var(--border)">Tipo de ropa</th>
+            <th style="text-align:right;padding:.4rem .5rem;border-bottom:1px solid var(--border);width:90px">Peso (kg)</th>
+            <th style="padding:.4rem .5rem;border-bottom:1px solid var(--border);width:32px"></th>
+          </tr></thead>
+          <tbody id="saco-emp-body"></tbody>
+        </table>
       </div>
     </div>
     <div class="modal-foot">
       <button class="btn btn-secondary" onclick="cerrarModal('modal-saco')">Cancelar</button>
-      <button class="btn btn-primary" onclick="guardarSaco()">Registrar saco</button>
+      <button class="btn btn-primary" onclick="guardarSaco()">Registrar sacos</button>
     </div>
   </div>
 </div>
@@ -556,6 +561,40 @@
     <div class="modal-foot">
       <button class="btn btn-secondary" onclick="cerrarModal('modal-detalle-pedido-emp')">Cerrar</button>
       <button class="btn btn-primary" onclick="guardarSacoPedidoEmp()">+ Añadir saco</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR PEDIDO EMPLEADO -->
+<div class="modal-overlay" id="modal-editar-pedido-emp">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title" id="editar-ped-emp-titulo">Editar pedido</span>
+      <button class="modal-close" onclick="cerrarModal('modal-editar-pedido-emp')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editar-ped-emp-id" />
+      <div class="field">
+        <label>Estado</label>
+        <select id="editar-ped-emp-estado">
+          <option value="1">PENDIENTE</option>
+          <option value="2">EN PROCESO</option>
+          <option value="3">FINALIZADO</option>
+          <option value="4">ENTREGADO</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Fecha de entrega estimada</label>
+        <input type="date" id="editar-ped-emp-fecha" />
+      </div>
+      <div class="field">
+        <label>Observaciones</label>
+        <input type="text" id="editar-ped-emp-obs" placeholder="Notas adicionales..." />
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="cerrarModal('modal-editar-pedido-emp')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarEditarPedidoEmp()">Guardar cambios</button>
     </div>
   </div>
 </div>
@@ -721,6 +760,9 @@ async function avanzarEstado(id, estadoActual) {
 }
 
 /* ── NUEVO PEDIDO ── */
+const tiposRopaNombresEmp = {1:'Blanca',2:'Color',3:'Delicada',4:'Ropa hogar',5:'Especial',6:'Toallas medianas',7:'Toallas grandes',8:'Alfombrines',9:'Paños de cara',10:'Baberos'};
+let npSacoCount = 0;
+
 async function cargarClientesSelect() {
   const res      = await fetch(`${API}/clientes.php`);
   const clientes = await res.json();
@@ -728,39 +770,135 @@ async function cargarClientesSelect() {
     '<option value="">— Selecciona un cliente —</option>' +
     clientes.map(c => `<option value="${c.id}">${c.nombre} ${c.apellidos}</option>`).join('');
   document.getElementById('np-fecha').value = '';
-  document.getElementById('np-peso').value  = '';
   document.getElementById('np-obs').value   = '';
+  document.getElementById('np-sacos-existentes-wrap').style.display = 'none';
+  document.getElementById('np-sacos-existentes').innerHTML = '';
+  npSacoCount = 0;
+  document.getElementById('np-sacos-nuevos-body').innerHTML = '';
+  // No añadir fila vacía automáticamente — evita pedidos con 0 sacos
+}
+
+async function cargarSacosClienteEmp() {
+  const cid  = document.getElementById('np-cliente').value;
+  const wrap = document.getElementById('np-sacos-existentes-wrap');
+  const cont = document.getElementById('np-sacos-existentes');
+  cont.innerHTML = '';
+  if (!cid) { wrap.style.display = 'none'; return; }
+
+  const resSacos = await fetch(`${API}/sacos.php`);
+  const todosSacos = await resSacos.json();
+  const resPed  = await fetch(`${API}/pedidos.php`);
+  const pedidos = await resPed.json();
+  const pedidosCliente = pedidos.filter(p => String(p.cliente_id) === String(cid));
+  const idsPed = new Set(pedidosCliente.map(p => String(p.pedido_id)));
+  const sacosCliente = todosSacos.filter(s => idsPed.has(String(s.pedido_id)));
+
+  if (!sacosCliente.length) { wrap.style.display = 'none'; return; }
+
+  sacosCliente.forEach(s => {
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex;align-items:center;gap:.6rem;padding:.45rem .6rem;background:#f5f7fa;border-radius:8px;border:1.5px solid var(--border)';
+    div.innerHTML = `
+      <input type="checkbox" id="np-saco-ex-${s.id}" value="${s.id}" data-tipo="${s.tipo_ropa_id}" data-peso="${s.peso_kg}" style="width:16px;height:16px;cursor:pointer" />
+      <label for="np-saco-ex-${s.id}" style="cursor:pointer;flex:1;font-size:.88rem">
+        <strong>${tiposRopaNombresEmp[s.tipo_ropa_id]||s.tipo_ropa||'Tipo '+s.tipo_ropa_id}</strong>
+        — ${parseFloat(s.peso_kg).toFixed(1)} kg
+        — <span style="color:#22c55e;font-weight:600">${parseFloat(s.subtotal).toFixed(2)} €</span>
+        <span style="color:var(--text-hint);font-size:.78rem"> (${s.fecha_entrada||''})</span>
+      </label>`;
+    cont.appendChild(div);
+  });
+  wrap.style.display = 'block';
+}
+
+function addSacoNuevoPedidoEmp() {
+  const tbody = document.getElementById('np-sacos-nuevos-body');
+  const id    = npSacoCount++;
+  const tr    = document.createElement('tr');
+  tr.id = `np-saco-${id}`;
+  tr.style.borderBottom = '1px solid var(--border)';
+  tr.innerHTML = `
+    <td style="padding:.35rem .5rem">
+      <select style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:.4rem .6rem;font-family:inherit;font-size:.85rem;background:#f5f7fa;outline:none">
+        <option value="1">Blanca</option><option value="2">Color</option>
+        <option value="3">Delicada</option><option value="4">Ropa hogar</option>
+        <option value="5">Especial</option><option value="6">Toallas medianas</option>
+        <option value="7">Toallas grandes</option><option value="8">Alfombrines</option>
+        <option value="9">Paños de cara</option><option value="10">Baberos</option>
+      </select>
+    </td>
+    <td style="padding:.35rem .5rem">
+      <input type="number" placeholder="0.0" step="0.1" min="0.1" style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:.4rem .6rem;font-family:inherit;font-size:.85rem;background:#f5f7fa;outline:none;text-align:right" />
+    </td>
+    <td style="padding:.35rem .5rem;text-align:center">
+      <button type="button" onclick="document.getElementById('np-saco-${id}').remove()" style="background:none;border:none;cursor:pointer;color:#ef4444;font-size:1rem">×</button>
+    </td>`;
+  tbody.appendChild(tr);
 }
 
 async function guardarNuevoPedido() {
-  const cliente_id   = document.getElementById('np-cliente').value;
-  const fecha        = document.getElementById('np-fecha').value;
-  const tipo_ropa_id = document.getElementById('np-tipo').value;
-  const peso_kg      = document.getElementById('np-peso').value;
-  const obs          = document.getElementById('np-obs').value;
+  const cliente_id = document.getElementById('np-cliente').value;
+  const fecha      = document.getElementById('np-fecha').value;
+  const obs        = document.getElementById('np-obs').value;
 
-  if (!cliente_id)              { toast('Selecciona un cliente', 'error'); return; }
-  if (!fecha)                   { toast('Indica la fecha de entrega', 'error'); return; }
-  if (!peso_kg || peso_kg <= 0) { toast('Introduce el peso del saco', 'error'); return; }
+  if (!cliente_id) { toast('Selecciona un cliente', 'error'); return; }
+  if (!fecha)      { toast('Indica la fecha de entrega', 'error'); return; }
 
-  // 1. Crear el pedido
-  const resPed  = await fetch(`${API}/pedidos.php`, {
+  // Sacos existentes seleccionados
+  const checksEx = document.querySelectorAll('#np-sacos-existentes input[type=checkbox]:checked');
+  // Sacos nuevos
+  const filasNuevos = document.querySelectorAll('#np-sacos-nuevos-body tr');
+  const sacosNuevos = [];
+  for (const fila of filasNuevos) {
+    const sel  = fila.querySelector('select');
+    const inp  = fila.querySelector('input');
+    const tipo = sel ? parseInt(sel.value) : 0;
+    const peso = inp ? parseFloat(inp.value) : 0;
+    if (peso > 0) sacosNuevos.push({ tipo_ropa_id: tipo, peso_kg: peso });
+  }
+
+  if (!checksEx.length && !sacosNuevos.length) { toast('Selecciona o añade al menos un saco', 'error'); return; }
+
+  // 1. Crear UN SOLO pedido
+  const resPed = await fetch(`${API}/pedidos.php`, {
     method: 'POST', headers: {'Content-Type':'application/json'},
     body: JSON.stringify({ cliente_id: parseInt(cliente_id), empleado_id: 1, fecha_estimada: fecha, observaciones: obs })
   });
   const dataPed = await resPed.json();
   if (!dataPed.ok) { toast(dataPed.error || 'Error al crear el pedido', 'error'); return; }
 
-  // 2. Crear el saco vinculado al pedido
-  const resSaco  = await fetch(`${API}/sacos.php`, {
-    method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ pedido_id: dataPed.id, tipo_ropa_id: parseInt(tipo_ropa_id), peso_kg: parseFloat(peso_kg) })
-  });
-  const dataSaco = await resSaco.json();
-  if (dataSaco.ok) {
-    toast('Pedido y saco registrados correctamente');
-    navTo('pedidos');
-  } else toast(dataSaco.error || 'Error al registrar saco', 'error');
+  const pedidoId = dataPed.id;
+  let total = 0, errores = 0;
+
+  // 2. Mover sacos existentes seleccionados a este pedido
+  for (const chk of checksEx) {
+    const res = await fetch(`${API}/sacos.php`, {
+      method: 'PUT', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ id: parseInt(chk.value), pedido_id: pedidoId })
+    });
+    const d = await res.json();
+    d.ok ? total++ : errores++;
+  }
+
+  // 3. Crear sacos nuevos en este mismo pedido
+  for (const saco of sacosNuevos) {
+    const res = await fetch(`${API}/sacos.php`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ pedido_id: pedidoId, tipo_ropa_id: saco.tipo_ropa_id, peso_kg: saco.peso_kg })
+    });
+    const d = await res.json();
+    d.ok ? total++ : errores++;
+  }
+
+  // 4. Si no se añadió ningún saco, eliminar pedido vacío
+  if (total === 0) {
+    await fetch(`${API}/pedidos.php?id=${pedidoId}`, { method: 'DELETE' });
+    toast('No se añadió ningún saco. Pedido cancelado.', 'error');
+    return;
+  }
+
+  toast(`Pedido creado con ${total} saco(s)`);
+  navTo('pedidos');
 }
 
 /* ── FILTROS Y BUSQUEDA ── */
@@ -836,6 +974,7 @@ function renderPedidosEmp(data) {
       <td style="display:flex;gap:.4rem">
         ${p.estado !== 'ENTREGADO' ? `<button class="btn-table btn-avanzar" onclick="avanzarEstado(${p.pedido_id},'${p.estado}')">Avanzar</button>` : ''}
         <button class="btn-table" style="background:#f3f0ff;color:#6d28d9" onclick="abrirDetallePedidoEmp(${p.pedido_id},'${p.cliente}','${p.estado}','${p.fecha_entrada}')">📦 Sacos</button>
+        <button class="btn-table" style="background:#e8f0fe;color:#1d4ed8" onclick="abrirEditarPedidoEmp(${p.pedido_id},'${p.estado}','${p.fecha_entrada}')">✏️</button>
       </td>
     </tr>`).join('');
 }
@@ -957,49 +1096,86 @@ async function cargarProductos() {
 }
 
 /* ── SACOS ── */
+let sacoEmpCount = 0;
+
+function addSacoEmp() {
+  const tbody = document.getElementById('saco-emp-body');
+  const id    = sacoEmpCount++;
+  const tr    = document.createElement('tr');
+  tr.id = `saco-e-${id}`;
+  tr.style.borderBottom = '1px solid var(--border)';
+  tr.innerHTML = `
+    <td style="padding:.35rem .5rem">
+      <select style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:.4rem .6rem;font-family:inherit;font-size:.85rem;background:#f5f7fa;outline:none">
+        <option value="1">Blanca</option><option value="2">Color</option>
+        <option value="3">Delicada</option><option value="4">Ropa hogar</option>
+        <option value="5">Especial</option><option value="6">Toallas medianas</option>
+        <option value="7">Toallas grandes</option><option value="8">Alfombrines</option>
+        <option value="9">Paños de cara</option><option value="10">Baberos</option>
+      </select>
+    </td>
+    <td style="padding:.35rem .5rem">
+      <input type="number" placeholder="0.0" step="0.1" min="0.1" style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:.4rem .6rem;font-family:inherit;font-size:.85rem;background:#f5f7fa;outline:none;text-align:right" />
+    </td>
+    <td style="padding:.35rem .5rem;text-align:center">
+      <button type="button" onclick="document.getElementById('saco-e-${id}').remove()" style="background:none;border:none;cursor:pointer;color:#ef4444;font-size:1rem">×</button>
+    </td>`;
+  tbody.appendChild(tr);
+}
+
 async function abrirModalSaco() {
   const res      = await fetch(`${API}/clientes.php`);
   const clientes = await res.json();
-  const selCliente = document.getElementById('saco-cliente');
-  selCliente.innerHTML = '<option value="">— Selecciona un cliente —</option>' +
+  document.getElementById('saco-cliente').innerHTML = '<option value="">— Selecciona un cliente —</option>' +
     clientes.map(c => `<option value="${c.id}">${c.nombre} ${c.apellidos}</option>`).join('');
-  selCliente.onchange = null;
-  document.getElementById('saco-peso').value  = '';
-  document.getElementById('saco-obs').value   = '';
+  document.getElementById('saco-obs').value = '';
   const manana = new Date(); manana.setDate(manana.getDate() + 1);
   document.getElementById('saco-fecha').value = manana.toISOString().split('T')[0];
+  sacoEmpCount = 0;
+  document.getElementById('saco-emp-body').innerHTML = '';
+  addSacoEmp();
   abrirModal('modal-saco');
 }
 
 async function guardarSaco() {
-  const cliente_id   = document.getElementById('saco-cliente').value;
-  const fecha        = document.getElementById('saco-fecha').value;
-  const tipo_ropa_id = document.getElementById('saco-tipo').value;
-  const peso_kg      = document.getElementById('saco-peso').value;
-  const obs          = document.getElementById('saco-obs').value;
+  const cliente_id = document.getElementById('saco-cliente').value;
+  const fecha      = document.getElementById('saco-fecha').value;
+  const obs        = document.getElementById('saco-obs').value;
 
-  if (!cliente_id)              { toast('Selecciona un cliente', 'error'); return; }
-  if (!fecha)                   { toast('Indica la fecha de entrega', 'error'); return; }
-  if (!peso_kg || peso_kg <= 0) { toast('Introduce el peso del saco', 'error'); return; }
+  if (!cliente_id) { toast('Selecciona un cliente', 'error'); return; }
+  if (!fecha)      { toast('Indica la fecha de entrega', 'error'); return; }
 
-  const resPed  = await fetch(`${API}/pedidos.php`, {
+  const filas = document.querySelectorAll('#saco-emp-body tr');
+  const sacos = [];
+  for (const fila of filas) {
+    const sel  = fila.querySelector('select');
+    const inp  = fila.querySelector('input');
+    const tipo = sel ? parseInt(sel.value) : 0;
+    const peso = inp ? parseFloat(inp.value) : 0;
+    if (peso > 0) sacos.push({ tipo_ropa_id: tipo, peso_kg: peso });
+  }
+  if (!sacos.length) { toast('Añade al menos un saco con peso', 'error'); return; }
+
+  const resPed = await fetch(`${API}/pedidos.php`, {
     method: 'POST', headers: {'Content-Type':'application/json'},
     body: JSON.stringify({ cliente_id: parseInt(cliente_id), empleado_id: 1, fecha_estimada: fecha, observaciones: obs })
   });
   const dataPed = await resPed.json();
   if (!dataPed.ok) { toast(dataPed.error || 'Error al crear el pedido', 'error'); return; }
 
-  const resSaco  = await fetch(`${API}/sacos.php`, {
-    method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ pedido_id: dataPed.id, tipo_ropa_id: parseInt(tipo_ropa_id), peso_kg: parseFloat(peso_kg) })
-  });
-  const dataSaco = await resSaco.json();
-  if (dataSaco.ok) {
-    toast('Saco registrado correctamente');
-    cerrarModal('modal-saco');
-    cargarSacos();
-    cargarInicio();
-  } else toast(dataSaco.error || 'Error al registrar saco', 'error');
+  let total = 0;
+  for (const saco of sacos) {
+    const res = await fetch(`${API}/sacos.php`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ pedido_id: dataPed.id, tipo_ropa_id: saco.tipo_ropa_id, peso_kg: saco.peso_kg })
+    });
+    const d = await res.json();
+    if (d.ok) total++;
+  }
+  toast(`${total} saco(s) registrado(s) correctamente`);
+  cerrarModal('modal-saco');
+  cargarSacos();
+  cargarInicio();
 }
 
 /* ── DETALLE PEDIDO EMPLEADO ── */
@@ -1054,6 +1230,31 @@ async function guardarSacoPedidoEmp() {
     await cargarSacosPedidoEmp(pedidoActualEmp);
     cargarPedidos();
   } else toast(data.error || 'Error al añadir saco', 'error');
+}
+
+/* ── EDITAR PEDIDO EMPLEADO ── */
+function abrirEditarPedidoEmp(id, estado, fecha) {
+  document.getElementById('editar-ped-emp-id').value    = id;
+  document.getElementById('editar-ped-emp-titulo').textContent = `Editar pedido #${String(id).padStart(4,'0')}`;
+  document.getElementById('editar-ped-emp-fecha').value = fecha || '';
+  document.getElementById('editar-ped-emp-obs').value   = '';
+  const estadoMap = { 'PENDIENTE':'1','EN_PROCESO':'2','FINALIZADO':'3','ENTREGADO':'4' };
+  document.getElementById('editar-ped-emp-estado').value = estadoMap[estado] || '1';
+  abrirModal('modal-editar-pedido-emp');
+}
+
+async function guardarEditarPedidoEmp() {
+  const id      = document.getElementById('editar-ped-emp-id').value;
+  const estadoId = parseInt(document.getElementById('editar-ped-emp-estado').value);
+  const fecha   = document.getElementById('editar-ped-emp-fecha').value;
+  const obs     = document.getElementById('editar-ped-emp-obs').value;
+  const res  = await fetch(`${API}/pedidos.php`, {
+    method: 'PUT', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ id: parseInt(id), estado_id: estadoId, fecha_entrega: fecha, observaciones: obs })
+  });
+  const data = await res.json();
+  if (data.ok) { toast('Pedido actualizado'); cerrarModal('modal-editar-pedido-emp'); cargarPedidos(); }
+  else toast(data.error || 'Error al actualizar', 'error');
 }
 
 /* ── CARGA INICIAL ── */

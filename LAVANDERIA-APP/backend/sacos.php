@@ -49,6 +49,16 @@ switch ($method) {
         }
         break;
 
+    case 'PUT':
+        $d         = json_decode(file_get_contents("php://input"), true);
+        $id        = intval($d['id']        ?? 0);
+        $pedido_id = intval($d['pedido_id'] ?? 0);
+        if (!$id || !$pedido_id) { http_response_code(400); echo json_encode(["error"=>"id y pedido_id requeridos"]); exit(); }
+        $stmt = $conn->prepare("UPDATE sacos SET pedido_id=? WHERE id=?");
+        $stmt->bind_param("ii", $pedido_id, $id);
+        echo $stmt->execute() ? json_encode(["ok"=>true]) : json_encode(["error"=>$conn->error]);
+        break;
+
     case 'DELETE':
         $id = intval($_GET['id'] ?? 0);
         $stmt = $conn->prepare("DELETE FROM sacos WHERE id = ?");

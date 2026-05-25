@@ -65,6 +65,10 @@ switch ($method) {
 
     case 'DELETE':
         $id = intval($_GET['id'] ?? 0);
+        if (!$id) { http_response_code(400); echo json_encode(["error"=>"id requerido"]); exit(); }
+        // Borrar en cascada: sacos → facturas → pedido
+        $conn->query("DELETE FROM sacos WHERE pedido_id = $id");
+        $conn->query("DELETE FROM facturas WHERE pedido_id = $id");
         $stmt = $conn->prepare("DELETE FROM pedidos WHERE id = ?");
         $stmt->bind_param("i", $id);
         if ($stmt->execute()) {

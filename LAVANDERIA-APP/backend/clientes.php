@@ -68,8 +68,32 @@ switch ($method) {
         break;
 
     case 'DELETE':
-        $id = intval($_GET['id'] ?? 0);
-        $stmt = $conn->prepare("UPDATE clientes SET activo = 0 WHERE id = ?");
+        $id     = intval($_GET['id']     ?? 0);
+        $forzar = intval($_GET['forzar'] ?? 0);
+
+        if ($forzar) {
+            // Borrado completo en cascada
+            // 1. Obtener pedidos del cliente
+            $resPed = $conn->query("SELECT id FROM pedidos WHERE cliente_id = $id");
+            $pedidoIds = [];
+            while ($row = $resPed->fetch_assoc()) $pedidoIds[] = $row['id'];
+
+            if (!empty($pedidoIds)) {
+                $ids = implode(',', $pedidoIds);
+                // 2. Eliminar sacos
+                $conn->query("DELETE FROM sacos WHERE pedido_id IN ($ids)");
+                // 3. Eliminar facturas
+                $conn->query("DELETE FROM facturas WHERE pedido_id IN ($ids)");
+                // 4. Eliminar pedidos
+                $conn->query("DELETE FROM pedidos WHERE id IN ($ids)");
+            }
+            // 5. Eliminar cliente
+            $stmt = $conn->prepare("DELETE FROM clientes WHERE id = ?");
+        } else {
+            // Baja logica
+            $stmt = $conn->prepare("UPDATE clientes SET activo = 0 WHERE id = ?");
+        }
+
         $stmt->bind_param("i", $id);
         if ($stmt->execute()) {
             echo json_encode(["ok" => true]);

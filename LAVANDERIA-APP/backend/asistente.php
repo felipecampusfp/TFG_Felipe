@@ -9,7 +9,7 @@ $historial = $data['historial'] ?? [];
 
 if (!$pregunta) { echo json_encode(["error" => "Pregunta requerida"]); exit(); }
 
-$GROQ_KEY = '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';
+$GROQ_KEY = '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';
 $hoy = date('Y-m-d');
 $mes = date('Y-m');
 
@@ -66,6 +66,11 @@ $ctx .= "- Pedidos: ".count($pendientes)." pendientes, ".count($enProceso)." en 
 $ctx .= "- Clientes activos: ".count($clientes)."\n";
 $ctx .= "- Sacos hoy: ".count($sacosHoy)." (".number_format($pesoHoy,1)." kg)\n";
 $ctx .= "- Stock bajo minimo: ".count($stockBajo)." productos".( count($stockCrit)>0 ? " (".count($stockCrit)." sin stock)" : "")."\n";
+$ctx .= "- Lista completa de productos:\n";
+foreach ($productos as $prod) {
+    $estado = intval($prod['stock_actual']) === 0 ? 'SIN STOCK' : (intval($prod['stock_actual']) < intval($prod['stock_minimo']) ? 'STOCK BAJO' : 'OK');
+    $ctx .= "  * " . $prod['nombre'] . " | Categoria: " . $prod['cat'] . " | Stock: " . $prod['stock_actual'] . "/" . $prod['stock_minimo'] . " | Precio: " . $prod['precio_unidad'] . " EUR | Estado: $estado\n";
+}
 $ctx .= "- Facturas sin cobrar: ".count($sinCobrar)." (".e2($totalPend).")\n";
 $ctx .= "- Total facturado historico: ".e2($totalFact)."\n";
 if ($meActual) $ctx .= "- Este mes: base=".e2($meActual['base'])." IVA=".e2($meActual['iva'])." TOTAL=".e2($meActual['total'])." cobrado=".e2($meActual['cobrado'])." pendiente=".e2($meActual['pendiente'])."\n";
