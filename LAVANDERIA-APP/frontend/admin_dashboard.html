@@ -377,7 +377,7 @@
             <button onclick="exportarExcelMes()" style="background:#f5f7fa;color:#15803d;padding:.55rem 1.1rem;border-radius:8px;border:1px solid #bbf7d0;cursor:pointer;font-weight:600;font-family:inherit;font-size:.88rem">⬇ Excel del mes</button>
           </div>
           <div style="display:flex;gap:.5rem;align-items:center">
-            <input type="month" id="mes-facturacion" style="padding:.4rem .7rem;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.85rem;outline:none" />
+            <input type="month" id="mes-facturacion" onchange="cargarFacturas()" style="padding:.4rem .7rem;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.85rem;outline:none" />
             <!-- Filtros estado -->
             <select id="filtro-estado-fact" onchange="cargarFacturas()" style="padding:.4rem .7rem;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.85rem;outline:none">
               <option value="">Todos los estados</option>
@@ -390,6 +390,7 @@
         </div>
 
         <!-- Resumen rápido -->
+        <div id="fact-resumen-label" style="font-size:.78rem;color:var(--text-soft);margin-bottom:.5rem;display:flex;align-items:center;gap:.4rem"><span style="background:var(--brand-light);color:var(--brand-accent);padding:.15rem .55rem;border-radius:99px;font-weight:600;font-size:.72rem" id="fr-mes-label"></span></div>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.7rem;margin-bottom:1rem" id="fact-resumen">
           <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem">
             <div style="font-size:.75rem;color:var(--text-soft);text-transform:uppercase;letter-spacing:.4px">Total facturas</div>
@@ -621,17 +622,21 @@
 </div>
 
 <!-- MODAL PEDIDO -->
-<div class="modal-overlay" id="modal-pedido" style="align-items:flex-start;padding-top:2rem">
-  <div class="modal" style="max-width:580px">
+<div class="modal-overlay" id="modal-pedido" style="align-items:flex-start;padding-top:1.5rem">
+  <div class="modal" style="max-width:640px">
     <div class="modal-head">
       <span class="modal-title">Nuevo pedido</span>
       <button class="modal-close" onclick="cerrarModal('modal-pedido')">×</button>
     </div>
-    <div class="modal-body">
+    <div class="modal-body" style="max-height:78vh;overflow-y:auto;gap:1rem">
+
+      <!-- Cliente y fecha -->
       <div class="field-row">
         <div class="field">
           <label>Cliente *</label>
-          <select id="pedido-cliente" onchange="cargarSacosClientePedido()"><option value="">— Selecciona un cliente —</option></select>
+          <select id="pedido-cliente" onchange="cargarSacosClientePedido()">
+            <option value="">— Selecciona un cliente —</option>
+          </select>
         </div>
         <div class="field">
           <label>Fecha estimada de entrega *</label>
@@ -643,29 +648,60 @@
         <input type="text" id="pedido-obs" placeholder="Notas adicionales..." />
       </div>
 
-      <!-- Sacos del cliente sin asignar -->
-      <div id="pedido-sacos-existentes-wrap" style="display:none;border-top:1px solid var(--border);padding-top:.8rem;margin-top:.4rem">
-        <div style="font-size:.78rem;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.6rem">Sacos recibidos de este cliente — selecciona los de este pedido</div>
-        <div id="pedido-sacos-existentes" style="display:flex;flex-direction:column;gap:.4rem"></div>
+      <!-- SECCIÓN 1: Sacos nuevos -->
+      <div style="border-top:1px solid var(--border);padding-top:.9rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
+          <div>
+            <span style="font-size:.82rem;font-weight:600;color:var(--text-main)">Sacos nuevos</span>
+            <span style="font-size:.78rem;color:var(--text-hint);margin-left:.4rem">(añade sacos en el momento)</span>
+          </div>
+          <button type="button" onclick="addSacoPedido()" style="background:var(--brand-accent);color:#fff;border:none;border-radius:6px;padding:.35rem .85rem;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit">+ Añadir saco</button>
+        </div>
+        <div id="pedido-sacos-nuevos-wrap">
+          <table style="width:100%;border-collapse:collapse;font-size:.85rem">
+            <thead>
+              <tr style="background:#f5f7fa">
+                <th style="text-align:left;padding:.4rem .5rem;border-bottom:1px solid var(--border)">Tipo de ropa</th>
+                <th style="text-align:right;padding:.4rem .5rem;border-bottom:1px solid var(--border);width:85px">Peso (kg)</th>
+                <th style="text-align:right;padding:.4rem .5rem;border-bottom:1px solid var(--border);width:75px">€/kg</th>
+                <th style="text-align:right;padding:.4rem .5rem;border-bottom:1px solid var(--border);width:80px">Subtotal</th>
+                <th style="padding:.4rem .3rem;border-bottom:1px solid var(--border);width:28px"></th>
+              </tr>
+            </thead>
+            <tbody id="pedido-sacos-body"></tbody>
+          </table>
+          <div id="pedido-sacos-body-empty" style="text-align:center;padding:.6rem;font-size:.82rem;color:var(--text-hint)">Sin sacos nuevos añadidos</div>
+        </div>
       </div>
 
-      <!-- Sacos nuevos (opcional) -->
-      <div style="border-top:1px solid var(--border);padding-top:.8rem;margin-top:.4rem">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
-          <span style="font-size:.78rem;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.4px">Sacos nuevos <span style="font-weight:400;text-transform:none;color:var(--text-hint)">(opcional)</span></span>
-          <button type="button" onclick="addSacoPedido()" style="background:var(--brand-accent);color:#fff;border:none;border-radius:6px;padding:.3rem .8rem;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit">+ Añadir saco nuevo</button>
+      <!-- SECCIÓN 2: Sacos existentes del cliente -->
+      <div id="pedido-sacos-existentes-wrap" style="display:none;border-top:1px solid var(--border);padding-top:.9rem">
+        <div style="font-size:.82rem;font-weight:600;color:var(--text-main);margin-bottom:.5rem">
+          Sacos existentes del cliente
+          <span style="font-size:.78rem;color:var(--text-hint);font-weight:400;margin-left:.4rem">(selecciona los que quieras incluir)</span>
         </div>
-        <table style="width:100%;border-collapse:collapse;font-size:.85rem" id="pedido-sacos-table" style="display:none">
-          <thead>
-            <tr style="background:#f5f7fa">
-              <th style="text-align:left;padding:.4rem .5rem;border-bottom:1px solid var(--border)">Tipo de ropa</th>
-              <th style="text-align:right;padding:.4rem .5rem;border-bottom:1px solid var(--border);width:90px">Peso (kg)</th>
-              <th style="padding:.4rem .5rem;border-bottom:1px solid var(--border);width:32px"></th>
-            </tr>
-          </thead>
-          <tbody id="pedido-sacos-body"></tbody>
-        </table>
+        <div id="pedido-sacos-existentes" style="display:flex;flex-direction:column;gap:.35rem;max-height:180px;overflow-y:auto"></div>
       </div>
+
+      <!-- RESUMEN EN TIEMPO REAL -->
+      <div id="pedido-resumen" style="display:none;background:linear-gradient(135deg,#e8f0fe,#f0f5ff);border:1px solid rgba(62,133,245,.2);border-radius:10px;padding:.9rem 1.1rem">
+        <div style="font-size:.75rem;font-weight:600;color:var(--brand-accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.6rem">Resumen del pedido</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;font-size:.88rem">
+          <div style="background:#fff;border-radius:8px;padding:.5rem .7rem;text-align:center">
+            <div style="font-size:.72rem;color:var(--text-soft);margin-bottom:.2rem">Sacos</div>
+            <div style="font-size:1.3rem;font-weight:700;color:var(--text-main)" id="ped-res-sacos">0</div>
+          </div>
+          <div style="background:#fff;border-radius:8px;padding:.5rem .7rem;text-align:center">
+            <div style="font-size:.72rem;color:var(--text-soft);margin-bottom:.2rem">Peso total</div>
+            <div style="font-size:1.1rem;font-weight:700;color:var(--text-main)" id="ped-res-peso">0,0 kg</div>
+          </div>
+          <div style="background:#fff;border-radius:8px;padding:.5rem .7rem;text-align:center">
+            <div style="font-size:.72rem;color:var(--text-soft);margin-bottom:.2rem">Importe</div>
+            <div style="font-size:1.1rem;font-weight:700;color:var(--brand-accent)" id="ped-res-importe">0,00 €</div>
+          </div>
+        </div>
+      </div>
+
     </div>
     <div class="modal-foot">
       <button class="btn btn-secondary" onclick="cerrarModal('modal-pedido')">Cancelar</button>
@@ -746,9 +782,7 @@
             <select id="dp-tipo">
               <option value="1">Blanca</option><option value="2">Color</option>
               <option value="3">Delicada</option><option value="4">Ropa hogar</option>
-              <option value="5">Especial</option><option value="6">Toallas medianas</option>
-              <option value="7">Toallas grandes</option><option value="8">Alfombrines</option>
-              <option value="9">Paños de cara</option><option value="10">Baberos</option>
+              <option value="5">Especial</option>
             </select>
           </div>
           <div class="field">
@@ -1082,7 +1116,6 @@ async function cargarPedidos() {
     </tr>`).join('');
 }
 
-let sacosNuevoPedido = [];
 let sacoPedidoCount = 0;
 
 async function abrirModalPedido() {
@@ -1091,64 +1124,79 @@ async function abrirModalPedido() {
   document.getElementById('pedido-cliente').innerHTML =
     '<option value="">— Selecciona un cliente —</option>' +
     clientes.map(c => `<option value="${c.id}">${c.nombre} ${c.apellidos}</option>`).join('');
-  sacosNuevoPedido = [];
-  sacoPedidoCount  = 0;
+  sacoPedidoCount = 0;
   document.getElementById('pedido-sacos-body').innerHTML = '';
+  document.getElementById('pedido-sacos-body-empty').style.display = 'block';
   document.getElementById('pedido-fecha').value = '';
   document.getElementById('pedido-obs').value   = '';
   document.getElementById('pedido-sacos-existentes-wrap').style.display = 'none';
   document.getElementById('pedido-sacos-existentes').innerHTML = '';
+  document.getElementById('pedido-resumen').style.display = 'none';
   abrirModal('modal-pedido');
 }
 
 const tiposRopaNombres = {1:'Blanca',2:'Color',3:'Delicada',4:'Ropa hogar',5:'Especial',6:'Toallas medianas',7:'Toallas grandes',8:'Alfombrines',9:'Paños de cara',10:'Baberos'};
+const preciosPorTipo   = {1:1.50,2:1.50,3:2.50,4:1.80,5:3.00,6:1.20,7:1.40,8:2.00,9:1.00,10:1.00};
 
+// Carga los sacos existentes del cliente al seleccionarlo
 async function cargarSacosClientePedido() {
   const cid  = document.getElementById('pedido-cliente').value;
   const wrap = document.getElementById('pedido-sacos-existentes-wrap');
   const cont = document.getElementById('pedido-sacos-existentes');
   cont.innerHTML = '';
+  recalcularResumenPedido();
   if (!cid) { wrap.style.display = 'none'; return; }
 
-  // Cargar todos los sacos del cliente
-  const resSacos = await fetch(`${API}/sacos.php`);
+  const [resSacos, resPed] = await Promise.all([
+    fetch(`${API}/sacos.php`),
+    fetch(`${API}/pedidos.php`)
+  ]);
   const todosSacos = await resSacos.json();
+  const pedidos    = await resPed.json();
 
-  // Filtrar sacos de este cliente
-  const resPed  = await fetch(`${API}/pedidos.php`);
-  const pedidos = await resPed.json();
-  const pedidosCliente = pedidos.filter(p => String(p.cliente_id) === String(cid));
-  const idsPedidosCliente = new Set(pedidosCliente.map(p => String(p.pedido_id)));
+  const idsPedidosCliente = new Set(
+    pedidos.filter(p => String(p.cliente_id) === String(cid)).map(p => String(p.pedido_id))
+  );
   const sacosCliente = todosSacos.filter(s => idsPedidosCliente.has(String(s.pedido_id)));
 
   if (!sacosCliente.length) { wrap.style.display = 'none'; return; }
 
   sacosCliente.forEach(s => {
     const div = document.createElement('div');
-    div.style.cssText = 'display:flex;align-items:center;gap:.6rem;padding:.45rem .6rem;background:#f5f7fa;border-radius:8px;border:1.5px solid var(--border)';
+    div.style.cssText = 'display:flex;align-items:center;gap:.6rem;padding:.45rem .7rem;background:#f5f7fa;border-radius:8px;border:1.5px solid var(--border);cursor:pointer';
     div.innerHTML = `
-      <input type="checkbox" id="saco-ex-${s.id}" value="${s.id}" data-tipo="${s.tipo_ropa_id}" data-peso="${s.peso_kg}" data-pedido-id="${s.pedido_id}" style="width:16px;height:16px;cursor:pointer" />
-      <label for="saco-ex-${s.id}" style="cursor:pointer;flex:1;font-size:.88rem">
-        <strong>${tiposRopaNombres[s.tipo_ropa_id]||s.tipo_ropa||'Tipo '+s.tipo_ropa_id}</strong>
-        — ${parseFloat(s.peso_kg).toFixed(1)} kg
-        — ${parseFloat(s.precio_kg).toFixed(2)} €/kg
-        — <span style="color:#22c55e;font-weight:600">${parseFloat(s.subtotal).toFixed(2)} €</span>
-        <span style="color:var(--text-hint);font-size:.78rem"> (${s.fecha_entrada||''})</span>
+      <input type="checkbox" id="saco-ex-${s.id}" value="${s.id}"
+        data-peso="${s.peso_kg}" data-subtotal="${s.subtotal}" data-pedido-id="${s.pedido_id}"
+        onchange="recalcularResumenPedido()"
+        style="width:16px;height:16px;cursor:pointer;flex-shrink:0" />
+      <label for="saco-ex-${s.id}" style="cursor:pointer;flex:1;font-size:.87rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+        <strong>${tiposRopaNombres[s.tipo_ropa_id]||'Tipo '+s.tipo_ropa_id}</strong>
+        <span style="color:var(--text-soft)">·</span>
+        <span>${parseFloat(s.peso_kg).toFixed(1)} kg</span>
+        <span style="color:var(--text-soft)">·</span>
+        <span>${parseFloat(s.precio_kg).toFixed(2)} €/kg</span>
+        <span style="color:var(--text-soft)">·</span>
+        <span style="color:#22c55e;font-weight:600">${parseFloat(s.subtotal).toFixed(2)} €</span>
+        <span style="color:var(--text-hint);font-size:.75rem">(${s.fecha_entrada||''})</span>
       </label>`;
     cont.appendChild(div);
   });
   wrap.style.display = 'block';
 }
 
+// Añade una fila de saco nuevo en la tabla
 function addSacoPedido() {
-  const tbody = document.getElementById('pedido-sacos-body');
-  const id    = sacoPedidoCount++;
-  const tr    = document.createElement('tr');
+  const tbody   = document.getElementById('pedido-sacos-body');
+  const emptyEl = document.getElementById('pedido-sacos-body-empty');
+  if (emptyEl) emptyEl.style.display = 'none';
+  const id = sacoPedidoCount++;
+  const tr = document.createElement('tr');
   tr.id = `saco-ped-${id}`;
   tr.style.borderBottom = '1px solid var(--border)';
   tr.innerHTML = `
-    <td style="padding:.35rem .5rem">
-      <select style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:.4rem .6rem;font-family:inherit;font-size:.85rem;background:#f5f7fa;outline:none">
+    <td style="padding:.35rem .4rem">
+      <select onchange="recalcularFilaPedido('saco-ped-${id}')"
+        style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:.35rem .5rem;font-family:inherit;font-size:.84rem;background:#f5f7fa;outline:none">
         <option value="1">Blanca</option><option value="2">Color</option>
         <option value="3">Delicada</option><option value="4">Ropa hogar</option>
         <option value="5">Especial</option><option value="6">Toallas medianas</option>
@@ -1156,13 +1204,79 @@ function addSacoPedido() {
         <option value="9">Paños de cara</option><option value="10">Baberos</option>
       </select>
     </td>
-    <td style="padding:.35rem .5rem">
-      <input type="number" placeholder="0.0" step="0.1" min="0.1" style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:.4rem .6rem;font-family:inherit;font-size:.85rem;background:#f5f7fa;outline:none;text-align:right" />
+    <td style="padding:.35rem .4rem">
+      <input type="number" placeholder="0.0" step="0.1" min="0.1"
+        oninput="recalcularFilaPedido('saco-ped-${id}')"
+        style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:.35rem .5rem;font-family:inherit;font-size:.84rem;background:#f5f7fa;outline:none;text-align:right" />
     </td>
-    <td style="padding:.35rem .5rem;text-align:center">
-      <button type="button" onclick="document.getElementById('saco-ped-${id}').remove()" style="background:none;border:none;cursor:pointer;color:#ef4444;font-size:1rem;line-height:1">×</button>
+    <td style="padding:.35rem .4rem;text-align:right;font-size:.82rem;color:var(--text-soft)" id="saco-ped-precio-${id}">—</td>
+    <td style="padding:.35rem .4rem;text-align:right;font-weight:600;color:var(--brand-accent)" id="saco-ped-sub-${id}">—</td>
+    <td style="padding:.35rem .3rem;text-align:center">
+      <button type="button" onclick="eliminarFilaSaco('saco-ped-${id}')"
+        style="background:none;border:none;cursor:pointer;color:#ef4444;font-size:1.1rem;line-height:1">×</button>
     </td>`;
   tbody.appendChild(tr);
+  recalcularFilaPedido(`saco-ped-${id}`);
+}
+
+function eliminarFilaSaco(rowId) {
+  const tr = document.getElementById(rowId);
+  if (tr) tr.remove();
+  const tbody   = document.getElementById('pedido-sacos-body');
+  const emptyEl = document.getElementById('pedido-sacos-body-empty');
+  if (emptyEl) emptyEl.style.display = tbody.children.length === 0 ? 'block' : 'none';
+  recalcularResumenPedido();
+}
+
+function recalcularFilaPedido(rowId) {
+  const tr     = document.getElementById(rowId);
+  if (!tr) return;
+  const sel    = tr.querySelector('select');
+  const inp    = tr.querySelector('input');
+  const tipo   = sel ? parseInt(sel.value) : 1;
+  const peso   = inp ? parseFloat(inp.value) : 0;
+  const precio = preciosPorTipo[tipo] || 1.50;
+  const sub    = peso > 0 ? peso * precio : 0;
+  const idNum  = rowId.replace('saco-ped-', '');
+  const pEl    = document.getElementById(`saco-ped-precio-${idNum}`);
+  const sEl    = document.getElementById(`saco-ped-sub-${idNum}`);
+  if (pEl) pEl.textContent = precio.toFixed(2) + ' €/kg';
+  if (sEl) sEl.textContent = sub > 0 ? sub.toFixed(2).replace('.',',') + ' €' : '—';
+  recalcularResumenPedido();
+}
+
+function recalcularResumenPedido() {
+  let totalSacos = 0, totalPeso = 0, totalImporte = 0;
+
+  // Sacos nuevos
+  document.querySelectorAll('#pedido-sacos-body tr').forEach(tr => {
+    const sel  = tr.querySelector('select');
+    const inp  = tr.querySelector('input');
+    const tipo = sel ? parseInt(sel.value) : 1;
+    const peso = inp ? parseFloat(inp.value) : 0;
+    if (peso > 0) {
+      totalSacos++;
+      totalPeso    += peso;
+      totalImporte += peso * (preciosPorTipo[tipo] || 1.50);
+    }
+  });
+
+  // Sacos existentes seleccionados
+  document.querySelectorAll('#pedido-sacos-existentes input[type=checkbox]:checked').forEach(chk => {
+    totalSacos++;
+    totalPeso    += parseFloat(chk.dataset.peso    || 0);
+    totalImporte += parseFloat(chk.dataset.subtotal || 0);
+  });
+
+  const resumen = document.getElementById('pedido-resumen');
+  if (totalSacos > 0) {
+    resumen.style.display = 'block';
+    document.getElementById('ped-res-sacos').textContent   = totalSacos;
+    document.getElementById('ped-res-peso').textContent    = totalPeso.toFixed(1).replace('.',',') + ' kg';
+    document.getElementById('ped-res-importe').textContent = totalImporte.toFixed(2).replace('.',',') + ' €';
+  } else {
+    resumen.style.display = 'none';
+  }
 }
 
 async function guardarPedido() {
@@ -1171,83 +1285,61 @@ async function guardarPedido() {
   const obs        = document.getElementById('pedido-obs').value;
 
   if (!cliente_id) { toast('Selecciona un cliente', 'error'); return; }
-  if (!fecha)      { toast('Indica la fecha de entrega', 'error'); return; }
+  if (!fecha)      { toast('Indica la fecha estimada de entrega', 'error'); return; }
 
-  // Sacos nuevos (opcionales)
-  const filas = document.querySelectorAll('#pedido-sacos-body tr');
+  // Recoger sacos nuevos
   const sacosNuevos = [];
-  for (const fila of filas) {
+  document.querySelectorAll('#pedido-sacos-body tr').forEach(fila => {
     const sel  = fila.querySelector('select');
     const inp  = fila.querySelector('input');
     const tipo = sel ? parseInt(sel.value) : 0;
     const peso = inp ? parseFloat(inp.value) : 0;
-    if (peso > 0) sacosNuevos.push({ tipo_ropa_id: tipo, peso_kg: peso });
-  }
+    if (tipo > 0 && peso > 0) sacosNuevos.push({ tipo_ropa_id: tipo, peso_kg: peso });
+  });
 
-  // Sacos existentes seleccionados
-  const checksExistentes = document.querySelectorAll('#pedido-sacos-existentes input[type=checkbox]:checked');
+  // Recoger sacos existentes seleccionados
+  const checksExistentes = [...document.querySelectorAll('#pedido-sacos-existentes input[type=checkbox]:checked')];
 
   if (!sacosNuevos.length && !checksExistentes.length) {
-    toast('Selecciona o añade al menos un saco', 'error'); return;
+    toast('Añade al menos un saco nuevo o selecciona uno existente', 'error'); return;
   }
 
-  let pedidoId = null;
+  // Crear el pedido
+  const resPed  = await fetch(`${API}/pedidos.php`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ cliente_id: parseInt(cliente_id), empleado_id: 1, fecha_estimada: fecha, observaciones: obs })
+  });
+  const dataPed = await resPed.json();
+  if (!dataPed.ok) { toast(dataPed.error || 'Error al crear el pedido', 'error'); return; }
+  const pedidoId = dataPed.id;
+
   let total = 0, errores = 0;
 
-  if (sacosNuevos.length > 0) {
-    // Hay sacos nuevos: crear un pedido nuevo y añadirlos
-    const resPed = await fetch(`${API}/pedidos.php`, {
+  // Crear sacos nuevos
+  for (const saco of sacosNuevos) {
+    const res = await fetch(`${API}/sacos.php`, {
       method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ cliente_id: parseInt(cliente_id), empleado_id: 1, fecha_estimada: fecha, observaciones: obs })
+      body: JSON.stringify({ pedido_id: pedidoId, tipo_ropa_id: saco.tipo_ropa_id, peso_kg: saco.peso_kg })
     });
-    const dataPed = await resPed.json();
-    if (!dataPed.ok) { toast(dataPed.error || 'Error al crear el pedido', 'error'); return; }
-    pedidoId = dataPed.id;
-
-    for (const saco of sacosNuevos) {
-      const res = await fetch(`${API}/sacos.php`, {
-        method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ pedido_id: pedidoId, tipo_ropa_id: saco.tipo_ropa_id, peso_kg: saco.peso_kg })
-      });
-      const d = await res.json();
-      d.ok ? total++ : errores++;
-    }
-
-    // Si además hay sacos existentes, también moverlos a este nuevo pedido
-    for (const chk of checksExistentes) {
-      const res = await fetch(`${API}/sacos.php`, {
-        method: 'PUT', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ id: parseInt(chk.value), pedido_id: pedidoId })
-      });
-      const d = await res.json();
-      d.ok ? total++ : errores++;
-    }
-
-  } else {
-    // Solo sacos existentes: usar el pedido que ya tienen (el del primer checkbox)
-    // Todos los sacos seleccionados ya pertenecen a un pedido — actualizamos fecha y obs
-    pedidoId = parseInt(checksExistentes[0].dataset.pedidoId);
-    
-    // Actualizar fecha y observaciones del pedido existente
-    await fetch(`${API}/pedidos.php`, {
-      method: 'PUT', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ id: pedidoId, fecha_entrega: fecha, observaciones: obs })
-    });
-
-    // Si hay sacos de diferentes pedidos, moverlos todos al primero
-    for (const chk of checksExistentes) {
-      const sacosPedidoId = parseInt(chk.dataset.pedidoId);
-      if (sacosPedidoId !== pedidoId) {
-        await fetch(`${API}/sacos.php`, {
-          method: 'PUT', headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({ id: parseInt(chk.value), pedido_id: pedidoId })
-        });
-      }
-      total++;
-    }
+    const d = await res.json();
+    d.ok ? total++ : errores++;
   }
 
-  toast(`Pedido #${String(pedidoId).padStart(4,'0')} listo con ${total} saco(s)`);
+  // Mover sacos existentes seleccionados al nuevo pedido
+  for (const chk of checksExistentes) {
+    const res = await fetch(`${API}/sacos.php`, {
+      method: 'PUT', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ id: parseInt(chk.value), pedido_id: pedidoId })
+    });
+    const d = await res.json();
+    d.ok ? total++ : errores++;
+  }
+
+  if (errores > 0) {
+    toast(`Pedido #${String(pedidoId).padStart(4,'0')} creado pero ${errores} saco(s) fallaron`, 'error');
+  } else {
+    toast(`Pedido #${String(pedidoId).padStart(4,'0')} creado con ${total} saco(s) ✓`);
+  }
   cerrarModal('modal-pedido');
   cargarPedidos();
 }
@@ -1344,10 +1436,15 @@ async function cargarFacturas() {
   const res   = await fetch(`${API}/facturas.php`);
   const data  = await res.json();
   const tbody = document.getElementById('tabla-facturas');
-  const filtro = document.getElementById('filtro-estado-fact')?.value || '';
-  const lista = filtro ? data.filter(f => (f.estado||'confirmada') === filtro) : data;
+  const filtroEstado = document.getElementById('filtro-estado-fact')?.value || '';
+  const mes = document.getElementById('mes-facturacion')?.value || '';
 
-  // Resumen
+  // Filtrar por mes si hay uno seleccionado
+  let lista = mes ? data.filter(f => f.fecha_emision && f.fecha_emision.startsWith(mes)) : data;
+  // Filtrar por estado si hay uno seleccionado
+  if (filtroEstado) lista = lista.filter(f => (f.estado||'confirmada') === filtroEstado);
+
+  // Resumen — solo datos del mes/filtro actual
   const total   = lista.reduce((s,f) => s + parseFloat(f.total||0), 0);
   const cobrado = lista.filter(f=>f.pagada=='1').reduce((s,f)=>s+parseFloat(f.total||0),0);
   const pend    = lista.filter(f=>f.pagada!='1').reduce((s,f)=>s+parseFloat(f.total||0),0);
@@ -1355,6 +1452,19 @@ async function cargarFacturas() {
   document.getElementById('fr-importe').textContent  = total.toFixed(2).replace('.',',') + ' €';
   document.getElementById('fr-cobrado').textContent  = cobrado.toFixed(2).replace('.',',') + ' €';
   document.getElementById('fr-pendiente').textContent = pend.toFixed(2).replace('.',',') + ' €';
+  // Etiqueta del mes en el resumen
+  const labelEl = document.getElementById('fr-mes-label');
+  if (labelEl) {
+    if (mes) {
+      const [anio, numMes] = mes.split('-');
+      const nombreMes = new Date(anio, parseInt(numMes)-1, 1).toLocaleString('es-ES', {month:'long', year:'numeric'});
+      labelEl.textContent = '📅 ' + nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1);
+      labelEl.style.display = 'inline';
+    } else {
+      labelEl.textContent = '📅 Todos los meses';
+      labelEl.style.display = 'inline';
+    }
+  }
 
   if (!lista.length) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--text-hint)">No hay facturas. Usa el botón para crearlas.</td></tr>'; return; }
 
@@ -1449,7 +1559,7 @@ function volverListaFacturas() {
 }
 
 async function accionFactura(accion, id) {
-  const body = { accion, id, fecha_pago: new Date().toISOString().split('T')[0] };
+  const body = { accion, id, fecha_pago: (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })() };
   const res  = await fetch(`${API}/facturas.php`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
   const data = await res.json();
   if (data.ok) { toast(accion==='pagar'?'Factura cobrada!':'Factura cancelada'); volverListaFacturas(); }
@@ -1476,7 +1586,7 @@ async function abrirNuevaFactura() {
   document.getElementById('fact-guardar-area').style.display = 'flex';
   document.getElementById('fact-titulo').textContent = 'Nueva factura';
   document.getElementById('fact-numero').value   = 'Se generará automáticamente';
-  document.getElementById('fact-fecha').value    = new Date().toISOString().split('T')[0];
+  document.getElementById('fact-fecha').value    = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
   document.getElementById('fact-notas').value    = '';
   document.getElementById('fact-botones').innerHTML = '';
   document.getElementById('fact-estado-badge').className = 'badge pendiente';
@@ -1730,7 +1840,7 @@ async function eliminarUsuario(id) {
 /* ── SACOS ADMIN ── */
 async function cargarSacosAdmin() {
   const fechaInput = document.getElementById('fecha-sacos-admin');
-  const fecha = fechaInput.value || new Date().toISOString().split('T')[0];
+  const fecha = fechaInput.value || (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
   const tipos = { 1:'Blanca', 2:'Color', 3:'Delicada', 4:'Ropa hogar', 5:'Especial', 6:'Toallas medianas', 7:'Toallas grandes', 8:'Alfombrines', 9:'Paños de cara', 10:'Baberos' };
 
   const res     = await fetch(`${API}/pedidos.php`);
@@ -1888,7 +1998,7 @@ async function cargarSacosPedido(id) {
   const res   = await fetch(`${API}/sacos.php?pedido_id=${id}`);
   const sacos = await res.json();
   const tbody = document.getElementById('dp-sacos-body');
-  const tipos = {1:'Blanca',2:'Color',3:'Delicada',4:'Ropa hogar',5:'Especial',6:'Toallas medianas',7:'Toallas grandes',8:'Alfombrines',9:'Paños de cara',10:'Baberos'};
+  const tipos = { 1:'Blanca', 2:'Color', 3:'Delicada', 4:'Ropa hogar', 5:'Especial', 6:'Toallas medianas', 7:'Toallas grandes', 8:'Alfombrines', 9:'Paños de cara', 10:'Baberos' };
 
   if (!sacos.length) {
     tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:1rem;color:var(--text-hint)">Sin sacos registrados</td></tr>';
@@ -1964,7 +2074,7 @@ async function abrirModalSacoAdmin() {
     clientes.map(c => `<option value="${c.id}">${c.nombre} ${c.apellidos}</option>`).join('');
   document.getElementById('saco-admin-obs').value = '';
   const manana = new Date(); manana.setDate(manana.getDate() + 1);
-  document.getElementById('saco-admin-fecha').value = manana.toISOString().split('T')[0];
+  document.getElementById('saco-admin-fecha').value = (() => { const d = manana; return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
   sacoAdminCount = 0;
   document.getElementById('sacos-admin-body').innerHTML = '';
   addSacoAdmin();
@@ -2097,7 +2207,7 @@ async function cargarDashboard() {
 
   // Gráfica tarta: sacos del día de hoy por tipo de ropa
   const tiposNombres = { 1:'Blanca', 2:'Color', 3:'Delicada', 4:'Ropa hogar', 5:'Especial', 6:'Toallas med.', 7:'Toallas gr.', 8:'Alfombrines', 9:'Paños cara', 10:'Baberos' };
-  const hoyFecha = new Date().toISOString().split('T')[0];
+  const hoyFecha = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
   let sacos = [], sacosDia = [];
   try {
     const resSacos = await fetch(`${API}/sacos.php`);
@@ -2183,7 +2293,7 @@ function generarAlertasIA(pedidos, productos, facturas, clientes) {
   if (pend.length > 4) alertas.push({ tipo:'warning', emoji:'⏳', texto:`Hay ${pend.length} pedidos pendientes acumulados. Procésalos para evitar retrasos.` });
 
   // Sin pedidos hoy
-  const hoyStr = new Date().toISOString().split('T')[0];
+  const hoyStr = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
   const pedHoy = pedidos.filter(p=>p.fecha_entrada===hoyStr);
   if (pedHoy.length === 0 && new Date().getDay() >= 1 && new Date().getDay() <= 5) {
     alertas.push({ tipo:'info', emoji:'📋', texto:`Sin pedidos registrados hoy. Buen momento para revisar stock y cobrar facturas pendientes.` });
@@ -2310,7 +2420,7 @@ async function eliminarPedido() {
 
 window.addEventListener('load', () => {
   cargarDashboard();
-  document.getElementById('fecha-sacos-admin').value = new Date().toISOString().split('T')[0];
+  document.getElementById('fecha-sacos-admin').value = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
   const hoy = new Date();
   const mes = hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0');
   const inputMes = document.getElementById('mes-facturacion');

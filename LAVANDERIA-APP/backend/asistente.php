@@ -9,7 +9,7 @@ $historial = $data['historial'] ?? [];
 
 if (!$pregunta) { echo json_encode(["error" => "Pregunta requerida"]); exit(); }
 
-$GROQ_KEY = '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';
+$GROQ_KEY = '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';
 $hoy = date('Y-m-d');
 $mes = date('Y-m');
 

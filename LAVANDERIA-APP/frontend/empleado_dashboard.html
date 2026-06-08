@@ -270,7 +270,9 @@
     <div class="section" id="sec-nuevo-pedido">
       <div class="panel">
         <div class="panel-head"><span class="panel-title">Registrar nuevo pedido</span></div>
-        <div class="panel-body">
+        <div class="panel-body" style="display:flex;flex-direction:column;gap:1rem">
+
+          <!-- Cliente y fecha -->
           <div class="field-row">
             <div class="field">
               <label>Cliente *</label>
@@ -283,31 +285,59 @@
             <input type="text" id="np-obs" placeholder="Notas adicionales..." />
           </div>
 
-          <!-- Sacos existentes del cliente -->
-          <div id="np-sacos-existentes-wrap" style="display:none;border-top:1px solid var(--border);padding-top:.8rem;margin-top:.8rem">
-            <div style="font-size:.78rem;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.6rem">Sacos recibidos de este cliente — selecciona los de este pedido</div>
-            <div id="np-sacos-existentes" style="display:flex;flex-direction:column;gap:.4rem"></div>
-          </div>
-
-          <!-- Sacos nuevos (opcional) -->
-          <div style="border-top:1px solid var(--border);padding-top:.8rem;margin-top:.8rem">
+          <!-- SECCIÓN 1: Sacos nuevos -->
+          <div style="border-top:1px solid var(--border);padding-top:.9rem">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
-              <span style="font-size:.78rem;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.4px">Sacos nuevos <span style="font-weight:400;text-transform:none;color:var(--text-hint)">(opcional)</span></span>
-              <button type="button" onclick="addSacoNuevoPedidoEmp()" style="background:#f5f7fa;color:var(--brand-accent);border:1px solid var(--border);border-radius:6px;padding:.3rem .8rem;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit">+ Añadir saco nuevo</button>
+              <div>
+                <span style="font-size:.82rem;font-weight:600;color:var(--text-main)">Sacos nuevos</span>
+                <span style="font-size:.78rem;color:var(--text-hint);margin-left:.4rem">(añade sacos en el momento)</span>
+              </div>
+              <button type="button" onclick="addSacoNuevoPedidoEmp()" style="background:var(--brand-accent);color:#fff;border:none;border-radius:6px;padding:.35rem .85rem;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit">+ Añadir saco</button>
             </div>
             <table style="width:100%;border-collapse:collapse;font-size:.85rem">
               <thead>
                 <tr style="background:#f5f7fa">
                   <th style="text-align:left;padding:.4rem .5rem;border-bottom:1px solid var(--border)">Tipo de ropa</th>
-                  <th style="text-align:right;padding:.4rem .5rem;border-bottom:1px solid var(--border);width:90px">Peso (kg)</th>
-                  <th style="padding:.4rem .5rem;border-bottom:1px solid var(--border);width:32px"></th>
+                  <th style="text-align:right;padding:.4rem .5rem;border-bottom:1px solid var(--border);width:85px">Peso (kg)</th>
+                  <th style="text-align:right;padding:.4rem .5rem;border-bottom:1px solid var(--border);width:75px">€/kg</th>
+                  <th style="text-align:right;padding:.4rem .5rem;border-bottom:1px solid var(--border);width:80px">Subtotal</th>
+                  <th style="padding:.4rem .3rem;border-bottom:1px solid var(--border);width:28px"></th>
                 </tr>
               </thead>
               <tbody id="np-sacos-nuevos-body"></tbody>
             </table>
+            <div id="np-sacos-nuevos-empty" style="text-align:center;padding:.6rem;font-size:.82rem;color:var(--text-hint)">Sin sacos nuevos añadidos</div>
           </div>
 
-          <div style="margin-top:1.2rem">
+          <!-- SECCIÓN 2: Sacos existentes del cliente -->
+          <div id="np-sacos-existentes-wrap" style="display:none;border-top:1px solid var(--border);padding-top:.9rem">
+            <div style="font-size:.82rem;font-weight:600;color:var(--text-main);margin-bottom:.5rem">
+              Sacos existentes del cliente
+              <span style="font-size:.78rem;color:var(--text-hint);font-weight:400;margin-left:.4rem">(selecciona los que quieras incluir)</span>
+            </div>
+            <div id="np-sacos-existentes" style="display:flex;flex-direction:column;gap:.35rem;max-height:180px;overflow-y:auto"></div>
+          </div>
+
+          <!-- RESUMEN EN TIEMPO REAL -->
+          <div id="np-resumen" style="display:none;background:linear-gradient(135deg,#e8f0fe,#f0f5ff);border:1px solid rgba(62,133,245,.2);border-radius:10px;padding:.9rem 1.1rem">
+            <div style="font-size:.75rem;font-weight:600;color:var(--brand-accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.6rem">Resumen del pedido</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;font-size:.88rem">
+              <div style="background:#fff;border-radius:8px;padding:.5rem .7rem;text-align:center">
+                <div style="font-size:.72rem;color:var(--text-soft);margin-bottom:.2rem">Sacos</div>
+                <div style="font-size:1.3rem;font-weight:700;color:var(--text-main)" id="np-res-sacos">0</div>
+              </div>
+              <div style="background:#fff;border-radius:8px;padding:.5rem .7rem;text-align:center">
+                <div style="font-size:.72rem;color:var(--text-soft);margin-bottom:.2rem">Peso total</div>
+                <div style="font-size:1.1rem;font-weight:700;color:var(--text-main)" id="np-res-peso">0,0 kg</div>
+              </div>
+              <div style="background:#fff;border-radius:8px;padding:.5rem .7rem;text-align:center">
+                <div style="font-size:.72rem;color:var(--text-soft);margin-bottom:.2rem">Importe</div>
+                <div style="font-size:1.1rem;font-weight:700;color:var(--brand-accent)" id="np-res-importe">0,00 €</div>
+              </div>
+            </div>
+          </div>
+
+          <div>
             <button class="btn btn-primary" onclick="guardarNuevoPedido()">Guardar pedido</button>
           </div>
         </div>
@@ -372,13 +402,13 @@
           <span class="panel-title">Clientes</span>
           <div style="display:flex;gap:.5rem;align-items:center">
             <input type="text" id="buscar-cliente-emp" placeholder="🔍 Buscar..." oninput="filtrarClientesEmp()" style="padding:.4rem .8rem;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.85rem;outline:none;width:180px" />
-            <button class="panel-action" onclick="abrirModalCliente()">+ Nuevo cliente</button>
+            
           </div>
         </div>
         <div class="panel-body" style="padding:0">
           <table class="data-table">
-            <thead><tr><th>Nombre</th><th>Teléfono</th><th>Email</th><th>Acciones</th></tr></thead>
-            <tbody id="tabla-clientes"><tr><td colspan="4" style="text-align:center;padding:1rem;color:var(--text-hint)">Cargando...</td></tr></tbody>
+            <thead><tr><th>Nombre</th><th>Teléfono</th><th>Email</th></tr></thead>
+            <tbody id="tabla-clientes"><tr><td colspan="3" style="text-align:center;padding:1rem;color:var(--text-hint)">Cargando...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -391,7 +421,7 @@
         <div class="panel-body" style="padding:0">
           <table class="data-table">
             <thead><tr><th>Producto</th><th>Categoría</th><th>Stock actual</th><th>Stock mínimo</th><th>Estado</th></tr></thead>
-            <tbody id="tabla-productos"><tr><td colspan="5" style="text-align:center;padding:1rem;color:var(--text-hint)">Cargando...</td></tr></tbody>
+            <tbody id="tabla-productos"><tr><td colspan="6" style="text-align:center;padding:1rem;color:var(--text-hint)">Cargando...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -638,7 +668,19 @@ function navTo(section) {
   if (section === 'clientes')  cargarClientes();
   if (section === 'productos') cargarProductos();
   if (section === 'sacos')     cargarSacos();
-  if (section === 'nuevo-pedido') cargarClientesSelect();
+  if (section === 'nuevo-pedido') {
+    cargarClientesSelect();
+    npSacoCount = 0;
+    document.getElementById('np-sacos-nuevos-body').innerHTML = '';
+    const emptyEl = document.getElementById('np-sacos-nuevos-empty');
+    if (emptyEl) emptyEl.style.display = 'block';
+    document.getElementById('np-sacos-existentes-wrap').style.display = 'none';
+    document.getElementById('np-sacos-existentes').innerHTML = '';
+    document.getElementById('np-resumen').style.display = 'none';
+    document.getElementById('np-cliente').value = '';
+    document.getElementById('np-fecha').value   = '';
+    document.getElementById('np-obs').value     = '';
+  }
 }
 document.querySelectorAll('.nav-item').forEach(i => i.addEventListener('click', () => navTo(i.dataset.section)));
 function cerrarSesion() { sessionStorage.removeItem('lav_user'); localStorage.removeItem('lav_user'); window.location.href = 'login.html'; }
@@ -684,7 +726,7 @@ async function cargarInicio() {
   }
 
   // Pedidos de hoy tabla
-  const hoy   = new Date().toISOString().split('T')[0];
+  const hoy   = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
   const tbody = document.getElementById('inicio-pedidos');
   const hoyPedidos = pedidos.filter(p => p.fecha_entrada === hoy || p.estado === 'PENDIENTE' || p.estado === 'EN_PROCESO');
   if (!hoyPedidos.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:1rem;color:var(--text-hint)">No hay pedidos activos hoy</td></tr>'; }
@@ -783,28 +825,37 @@ async function cargarSacosClienteEmp() {
   const wrap = document.getElementById('np-sacos-existentes-wrap');
   const cont = document.getElementById('np-sacos-existentes');
   cont.innerHTML = '';
+  recalcularResumenEmp();
   if (!cid) { wrap.style.display = 'none'; return; }
 
-  const resSacos = await fetch(`${API}/sacos.php`);
+  const [resSacos, resPed] = await Promise.all([
+    fetch(`${API}/sacos.php`),
+    fetch(`${API}/pedidos.php`)
+  ]);
   const todosSacos = await resSacos.json();
-  const resPed  = await fetch(`${API}/pedidos.php`);
-  const pedidos = await resPed.json();
-  const pedidosCliente = pedidos.filter(p => String(p.cliente_id) === String(cid));
-  const idsPed = new Set(pedidosCliente.map(p => String(p.pedido_id)));
+  const pedidos    = await resPed.json();
+  const idsPed = new Set(pedidos.filter(p => String(p.cliente_id) === String(cid)).map(p => String(p.pedido_id)));
   const sacosCliente = todosSacos.filter(s => idsPed.has(String(s.pedido_id)));
 
   if (!sacosCliente.length) { wrap.style.display = 'none'; return; }
 
   sacosCliente.forEach(s => {
     const div = document.createElement('div');
-    div.style.cssText = 'display:flex;align-items:center;gap:.6rem;padding:.45rem .6rem;background:#f5f7fa;border-radius:8px;border:1.5px solid var(--border)';
+    div.style.cssText = 'display:flex;align-items:center;gap:.6rem;padding:.45rem .7rem;background:#f5f7fa;border-radius:8px;border:1.5px solid var(--border);cursor:pointer';
     div.innerHTML = `
-      <input type="checkbox" id="np-saco-ex-${s.id}" value="${s.id}" data-tipo="${s.tipo_ropa_id}" data-peso="${s.peso_kg}" style="width:16px;height:16px;cursor:pointer" />
-      <label for="np-saco-ex-${s.id}" style="cursor:pointer;flex:1;font-size:.88rem">
-        <strong>${tiposRopaNombresEmp[s.tipo_ropa_id]||s.tipo_ropa||'Tipo '+s.tipo_ropa_id}</strong>
-        — ${parseFloat(s.peso_kg).toFixed(1)} kg
-        — <span style="color:#22c55e;font-weight:600">${parseFloat(s.subtotal).toFixed(2)} €</span>
-        <span style="color:var(--text-hint);font-size:.78rem"> (${s.fecha_entrada||''})</span>
+      <input type="checkbox" id="np-saco-ex-${s.id}" value="${s.id}"
+        data-peso="${s.peso_kg}" data-subtotal="${s.subtotal}" data-pedido-id="${s.pedido_id}"
+        onchange="recalcularResumenEmp()"
+        style="width:16px;height:16px;cursor:pointer;flex-shrink:0" />
+      <label for="np-saco-ex-${s.id}" style="cursor:pointer;flex:1;font-size:.87rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+        <strong>${tiposRopaNombresEmp[s.tipo_ropa_id]||'Tipo '+s.tipo_ropa_id}</strong>
+        <span style="color:var(--text-soft)">·</span>
+        <span>${parseFloat(s.peso_kg).toFixed(1)} kg</span>
+        <span style="color:var(--text-soft)">·</span>
+        <span>${parseFloat(s.precio_kg).toFixed(2)} €/kg</span>
+        <span style="color:var(--text-soft)">·</span>
+        <span style="color:#22c55e;font-weight:600">${parseFloat(s.subtotal).toFixed(2)} €</span>
+        <span style="color:var(--text-hint);font-size:.75rem">(${s.fecha_entrada||''})</span>
       </label>`;
     cont.appendChild(div);
   });
@@ -812,14 +863,17 @@ async function cargarSacosClienteEmp() {
 }
 
 function addSacoNuevoPedidoEmp() {
-  const tbody = document.getElementById('np-sacos-nuevos-body');
-  const id    = npSacoCount++;
-  const tr    = document.createElement('tr');
+  const tbody   = document.getElementById('np-sacos-nuevos-body');
+  const emptyEl = document.getElementById('np-sacos-nuevos-empty');
+  if (emptyEl) emptyEl.style.display = 'none';
+  const id = npSacoCount++;
+  const tr = document.createElement('tr');
   tr.id = `np-saco-${id}`;
   tr.style.borderBottom = '1px solid var(--border)';
   tr.innerHTML = `
-    <td style="padding:.35rem .5rem">
-      <select style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:.4rem .6rem;font-family:inherit;font-size:.85rem;background:#f5f7fa;outline:none">
+    <td style="padding:.35rem .4rem">
+      <select onchange="recalcularFilaEmp('np-saco-${id}')"
+        style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:.35rem .5rem;font-family:inherit;font-size:.84rem;background:#f5f7fa;outline:none">
         <option value="1">Blanca</option><option value="2">Color</option>
         <option value="3">Delicada</option><option value="4">Ropa hogar</option>
         <option value="5">Especial</option><option value="6">Toallas medianas</option>
@@ -827,13 +881,77 @@ function addSacoNuevoPedidoEmp() {
         <option value="9">Paños de cara</option><option value="10">Baberos</option>
       </select>
     </td>
-    <td style="padding:.35rem .5rem">
-      <input type="number" placeholder="0.0" step="0.1" min="0.1" style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:.4rem .6rem;font-family:inherit;font-size:.85rem;background:#f5f7fa;outline:none;text-align:right" />
+    <td style="padding:.35rem .4rem">
+      <input type="number" placeholder="0.0" step="0.1" min="0.1"
+        oninput="recalcularFilaEmp('np-saco-${id}')"
+        style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:.35rem .5rem;font-family:inherit;font-size:.84rem;background:#f5f7fa;outline:none;text-align:right" />
     </td>
-    <td style="padding:.35rem .5rem;text-align:center">
-      <button type="button" onclick="document.getElementById('np-saco-${id}').remove()" style="background:none;border:none;cursor:pointer;color:#ef4444;font-size:1rem">×</button>
+    <td style="padding:.35rem .4rem;text-align:right;font-size:.82rem;color:var(--text-soft)" id="np-saco-precio-${id}">—</td>
+    <td style="padding:.35rem .4rem;text-align:right;font-weight:600;color:var(--brand-accent)" id="np-saco-sub-${id}">—</td>
+    <td style="padding:.35rem .3rem;text-align:center">
+      <button type="button" onclick="eliminarFilaSacoEmp('np-saco-${id}')"
+        style="background:none;border:none;cursor:pointer;color:#ef4444;font-size:1.1rem;line-height:1">×</button>
     </td>`;
   tbody.appendChild(tr);
+  recalcularFilaEmp(`np-saco-${id}`);
+}
+
+function eliminarFilaSacoEmp(rowId) {
+  const tr = document.getElementById(rowId);
+  if (tr) tr.remove();
+  const tbody   = document.getElementById('np-sacos-nuevos-body');
+  const emptyEl = document.getElementById('np-sacos-nuevos-empty');
+  if (emptyEl) emptyEl.style.display = tbody.children.length === 0 ? 'block' : 'none';
+  recalcularResumenEmp();
+}
+
+function recalcularFilaEmp(rowId) {
+  const tr     = document.getElementById(rowId);
+  if (!tr) return;
+  const sel    = tr.querySelector('select');
+  const inp    = tr.querySelector('input');
+  const tipo   = sel ? parseInt(sel.value) : 1;
+  const peso   = inp ? parseFloat(inp.value) : 0;
+  const precio = preciosPorTipoEmp[tipo] || 1.50;
+  const sub    = peso > 0 ? peso * precio : 0;
+  const idNum  = rowId.replace('np-saco-', '');
+  const pEl    = document.getElementById(`np-saco-precio-${idNum}`);
+  const sEl    = document.getElementById(`np-saco-sub-${idNum}`);
+  if (pEl) pEl.textContent = precio.toFixed(2) + ' €/kg';
+  if (sEl) sEl.textContent = sub > 0 ? sub.toFixed(2).replace('.',',') + ' €' : '—';
+  recalcularResumenEmp();
+}
+
+function recalcularResumenEmp() {
+  let totalSacos = 0, totalPeso = 0, totalImporte = 0;
+
+  document.querySelectorAll('#np-sacos-nuevos-body tr').forEach(tr => {
+    const sel  = tr.querySelector('select');
+    const inp  = tr.querySelector('input');
+    const tipo = sel ? parseInt(sel.value) : 1;
+    const peso = inp ? parseFloat(inp.value) : 0;
+    if (peso > 0) {
+      totalSacos++;
+      totalPeso    += peso;
+      totalImporte += peso * (preciosPorTipoEmp[tipo] || 1.50);
+    }
+  });
+
+  document.querySelectorAll('#np-sacos-existentes input[type=checkbox]:checked').forEach(chk => {
+    totalSacos++;
+    totalPeso    += parseFloat(chk.dataset.peso     || 0);
+    totalImporte += parseFloat(chk.dataset.subtotal || 0);
+  });
+
+  const resumen = document.getElementById('np-resumen');
+  if (totalSacos > 0) {
+    resumen.style.display = 'block';
+    document.getElementById('np-res-sacos').textContent   = totalSacos;
+    document.getElementById('np-res-peso').textContent    = totalPeso.toFixed(1).replace('.',',') + ' kg';
+    document.getElementById('np-res-importe').textContent = totalImporte.toFixed(2).replace('.',',') + ' €';
+  } else {
+    resumen.style.display = 'none';
+  }
 }
 
 async function guardarNuevoPedido() {
@@ -842,45 +960,33 @@ async function guardarNuevoPedido() {
   const obs        = document.getElementById('np-obs').value;
 
   if (!cliente_id) { toast('Selecciona un cliente', 'error'); return; }
-  if (!fecha)      { toast('Indica la fecha de entrega', 'error'); return; }
+  if (!fecha)      { toast('Indica la fecha estimada de entrega', 'error'); return; }
 
-  // Sacos existentes seleccionados
-  const checksEx = document.querySelectorAll('#np-sacos-existentes input[type=checkbox]:checked');
-  // Sacos nuevos
-  const filasNuevos = document.querySelectorAll('#np-sacos-nuevos-body tr');
   const sacosNuevos = [];
-  for (const fila of filasNuevos) {
+  document.querySelectorAll('#np-sacos-nuevos-body tr').forEach(fila => {
     const sel  = fila.querySelector('select');
     const inp  = fila.querySelector('input');
     const tipo = sel ? parseInt(sel.value) : 0;
     const peso = inp ? parseFloat(inp.value) : 0;
-    if (peso > 0) sacosNuevos.push({ tipo_ropa_id: tipo, peso_kg: peso });
+    if (tipo > 0 && peso > 0) sacosNuevos.push({ tipo_ropa_id: tipo, peso_kg: peso });
+  });
+
+  const checksEx = [...document.querySelectorAll('#np-sacos-existentes input[type=checkbox]:checked')];
+
+  if (!sacosNuevos.length && !checksEx.length) {
+    toast('Añade al menos un saco nuevo o selecciona uno existente', 'error'); return;
   }
 
-  if (!checksEx.length && !sacosNuevos.length) { toast('Selecciona o añade al menos un saco', 'error'); return; }
-
-  // 1. Crear UN SOLO pedido
   const resPed = await fetch(`${API}/pedidos.php`, {
     method: 'POST', headers: {'Content-Type':'application/json'},
     body: JSON.stringify({ cliente_id: parseInt(cliente_id), empleado_id: 1, fecha_estimada: fecha, observaciones: obs })
   });
   const dataPed = await resPed.json();
   if (!dataPed.ok) { toast(dataPed.error || 'Error al crear el pedido', 'error'); return; }
-
   const pedidoId = dataPed.id;
+
   let total = 0, errores = 0;
 
-  // 2. Mover sacos existentes seleccionados a este pedido
-  for (const chk of checksEx) {
-    const res = await fetch(`${API}/sacos.php`, {
-      method: 'PUT', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ id: parseInt(chk.value), pedido_id: pedidoId })
-    });
-    const d = await res.json();
-    d.ok ? total++ : errores++;
-  }
-
-  // 3. Crear sacos nuevos en este mismo pedido
   for (const saco of sacosNuevos) {
     const res = await fetch(`${API}/sacos.php`, {
       method: 'POST', headers: {'Content-Type':'application/json'},
@@ -890,14 +996,20 @@ async function guardarNuevoPedido() {
     d.ok ? total++ : errores++;
   }
 
-  // 4. Si no se añadió ningún saco, eliminar pedido vacío
-  if (total === 0) {
-    await fetch(`${API}/pedidos.php?id=${pedidoId}`, { method: 'DELETE' });
-    toast('No se añadió ningún saco. Pedido cancelado.', 'error');
-    return;
+  for (const chk of checksEx) {
+    const res = await fetch(`${API}/sacos.php`, {
+      method: 'PUT', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ id: parseInt(chk.value), pedido_id: pedidoId })
+    });
+    const d = await res.json();
+    d.ok ? total++ : errores++;
   }
 
-  toast(`Pedido creado con ${total} saco(s)`);
+  if (errores > 0) {
+    toast(`Pedido #${String(pedidoId).padStart(4,'0')} creado pero ${errores} saco(s) fallaron`, 'error');
+  } else {
+    toast(`Pedido #${String(pedidoId).padStart(4,'0')} creado con ${total} saco(s) ✓`);
+  }
   navTo('pedidos');
 }
 
@@ -920,9 +1032,6 @@ function renderClientesEmp(data) {
       <td>${c.nombre} ${c.apellidos}</td>
       <td>${c.telefono || '—'}</td>
       <td>${c.email || '—'}</td>
-      <td style="display:flex;gap:.4rem">
-        <button class="btn-table btn-edit" onclick='editarCliente(${JSON.stringify(c)})'>Editar</button>
-      </td>
     </tr>`).join('');
 }
 
@@ -982,7 +1091,7 @@ function renderPedidosEmp(data) {
 /* ── SACOS DEL DÍA ── */
 async function cargarSacos() {
   const fechaInput = document.getElementById('fecha-sacos');
-  const fecha = fechaInput.value || new Date().toISOString().split('T')[0];
+  const fecha = fechaInput.value || (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
 
   // Cargamos pedidos y filtramos sacos por fecha
   const res   = await fetch(`${API}/pedidos.php`);
@@ -1035,15 +1144,12 @@ async function cargarClientes() {
   const res  = await fetch(`${API}/clientes.php`);
   const data = await res.json();
   const tbody = document.getElementById('tabla-clientes');
-  if (!data.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:1rem;color:var(--text-hint)">No hay clientes</td></tr>'; return; }
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:1rem;color:var(--text-hint)">No hay clientes</td></tr>'; return; }
   tbody.innerHTML = data.map(c => `
     <tr>
       <td>${c.nombre} ${c.apellidos}</td>
       <td>${c.telefono || '—'}</td>
       <td>${c.email || '—'}</td>
-      <td style="display:flex;gap:.4rem">
-        <button class="btn-table btn-edit" onclick='editarCliente(${JSON.stringify(c)})'>Editar</button>
-      </td>
     </tr>`).join('');
 }
 
@@ -1091,6 +1197,7 @@ async function cargarProductos() {
       <td><strong style="color:${bajo?'#ef4444':'inherit'}">${p.stock_actual}</strong></td>
       <td>${p.stock_minimo}</td>
       <td><span class="badge ${bajo?'stockbajo':'stockok'}">${bajo?'⚠ Stock bajo':'OK'}</span></td>
+      <td><button class="btn-table btn-edit" onclick="abrirModalStock(${p.id},${p.stock_actual},'${p.nombre.replace(/'/g,'\'')}')" style="white-space:nowrap">✏️ Stock</button></td>
     </tr>`;
   }).join('');
 }
@@ -1321,7 +1428,7 @@ async function cambiarPassword() {
 
 window.addEventListener('load', () => {
   // Poner fecha de hoy en el selector de sacos
-  document.getElementById('fecha-sacos').value = new Date().toISOString().split('T')[0];
+  document.getElementById('fecha-sacos').value = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
   cargarInicio();
 });
 </script>
@@ -1352,7 +1459,7 @@ window.addEventListener('load', () => {
   </div>
 
   <div style="padding:.8rem;border-top:1px solid #e2e6ef;display:flex;gap:.5rem;background:#fff">
-    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..." style="flex:1;padding:.6rem .9rem;border:1.5px solid #e2e6ef;border-radius:8px;font-family:inherit;font-size:.85rem;outline:none" onkeydown="if(event.key==='Enter') enviarMensaje()" />
+    <input id="chat-input" type="text" placeholder="Pregunta sobre pedidos, sacos, clientes o stock..." style="flex:1;padding:.6rem .9rem;border:1.5px solid #e2e6ef;border-radius:8px;font-family:inherit;font-size:.85rem;outline:none" onkeydown="if(event.key==='Enter') enviarMensaje()" />
     <button onclick="enviarMensaje()" style="background:linear-gradient(135deg,#22c55e,#4ade80);border:none;border-radius:8px;padding:.6rem .9rem;cursor:pointer;color:#fff;font-size:.85rem;font-weight:600">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
     </button>
@@ -1380,6 +1487,20 @@ function addMessage(text, isUser) {
   return div;
 }
 
+// Palabras clave de módulos restringidos para empleados
+const TEMAS_RESTRINGIDOS_EMP = [
+  'factur', 'invoice', 'cobr', 'pagar', 'pagad', 'impag', 'importe total',
+  'base imponible', 'iva', 'ingreso', 'revenue', 'total facturado',
+  'factura', 'facturas', 'exportar factura', 'pdf factura',
+  'usuario', 'usuarios', 'contraseña', 'password', 'empleado registrado',
+  'trabajador', 'personal', 'rol', 'roles', 'admin', 'administrador'
+];
+
+function esTemaRestringido(texto) {
+  const lower = texto.toLowerCase();
+  return TEMAS_RESTRINGIDOS_EMP.some(t => lower.includes(t));
+}
+
 async function enviarMensaje() {
   const input = document.getElementById('chat-input');
   const texto = input.value.trim();
@@ -1391,11 +1512,30 @@ async function enviarMensaje() {
   loadingDiv.style.color = '#9aa3be';
   loadingDiv.style.fontStyle = 'italic';
 
+  // Bloquear acceso a módulos restringidos
+  if (esTemaRestringido(texto)) {
+    loadingDiv.textContent = 'No tengo acceso a esa información. Como empleado puedo ayudarte con pedidos, sacos, clientes y stock.';
+    loadingDiv.style.color = '#ef4444';
+    loadingDiv.style.fontStyle = 'normal';
+    return;
+  }
+
+  // Instrucción de rol que se envía con cada pregunta
+  const instruccionRol = 'Eres LaIA, el asistente de LavanderApp para empleados. ' +
+    'SOLO puedes responder sobre: pedidos, sacos, clientes y stock de productos. ' +
+    'NUNCA debes dar información sobre facturas, importes facturados, IVA, cobros, usuarios del sistema ni datos de administración. ' +
+    'Si te preguntan sobre esos temas responde que no tienes acceso a esa información como empleado.';
+
   try {
     const response = await fetch(`${API}/asistente.php`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pregunta: texto, historial: chatHistorial })
+      body: JSON.stringify({
+        pregunta: texto,
+        historial: chatHistorial,
+        instruccion_rol: instruccionRol,
+        rol: 'empleado'
+      })
     });
     const data = await response.json();
     const respuesta = data.respuesta || data.error || 'No pude obtener respuesta.';
@@ -1411,6 +1551,73 @@ async function enviarMensaje() {
     loadingDiv.style.color = '#ef4444';
   }
 }
+
+function abrirModalStock(id, stockActual, nombre) {
+  document.getElementById('stock-emp-id').value       = id;
+  document.getElementById('stock-emp-cantidad').value = stockActual;
+  document.getElementById('stock-emp-nombre').textContent = 'Producto: ' + nombre;
+  abrirModal('modal-stock-emp');
+}
+
+async function guardarStockEmp() {
+  const id       = document.getElementById('stock-emp-id').value;
+  const cantidad = parseInt(document.getElementById('stock-emp-cantidad').value);
+  if (isNaN(cantidad) || cantidad < 0) { toast('Introduce una cantidad válida', 'error'); return; }
+
+  // Recuperar todos los datos del producto para no machacar ningún campo
+  const resProd  = await fetch(`${API}/productos.php`);
+  const productos = await resProd.json();
+  const prod     = productos.find(p => String(p.id) === String(id));
+  if (!prod) { toast('Producto no encontrado', 'error'); return; }
+
+  // Enviar exactamente los campos que espera el PHP
+  const body = {
+    id:           parseInt(id),
+    nombre:       prod.nombre,
+    categoria_id: parseInt(prod.categoria_id),
+    stock_actual: cantidad,
+    stock_minimo: parseInt(prod.stock_minimo),
+    precio_unidad: parseFloat(prod.precio_unidad)
+  };
+
+  const res  = await fetch(`${API}/productos.php`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  const data = await res.json();
+  if (data.ok) {
+    toast('Stock actualizado correctamente');
+    cerrarModal('modal-stock-emp');
+    cargarProductos();
+  } else {
+    toast(data.error || 'Error al actualizar el stock', 'error');
+  }
+}
 </script>
+
+<!-- MODAL AJUSTAR STOCK -->
+<div class="modal-overlay" id="modal-stock-emp">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-head">
+      <span class="modal-title">Ajustar stock</span>
+      <button class="modal-close" onclick="cerrarModal('modal-stock-emp')">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:.88rem;color:var(--text-soft);margin-bottom:.8rem" id="stock-emp-nombre"></div>
+      <input type="hidden" id="stock-emp-id" />
+      <div class="field">
+        <label>Cantidad actual en stock *</label>
+        <input type="number" id="stock-emp-cantidad" min="0" step="1"
+          style="border:1.5px solid var(--border);border-radius:8px;padding:.5rem .7rem;font-family:inherit;font-size:.95rem;width:100%;outline:none" />
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="cerrarModal('modal-stock-emp')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarStockEmp()">Guardar</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
